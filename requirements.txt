@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+openai-whisper
+librosa
+numpy
+pandas
+yt-dlp
+ffmpeg-python
+python-multipart
+starlette
