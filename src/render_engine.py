@@ -4,7 +4,40 @@ import shutil
 import pandas as pd
 from dataclasses import dataclass, field
 
-COMPRESS_TARGET_DURATION = 0.4
+COMPRESS_TARGET_DURATION = 0.4   # fallback only — used when no style_profile is supplied
+
+
+def _resolve_compress_target(style_profile: dict = None) -> float:
+    """
+    Determines how many seconds of a COMPRESS-flagged pause to keep
+    (the rest of the pause is cut).
+
+    This MUST scale with the style profile's own `compress_duration`
+    threshold — the UI's "Gap Removal" preset (Natural / Balanced /
+    Aggressive) and any reference-video-derived style both set that
+    threshold, and the user expects gaps to actually shrink accordingly.
+
+    Bug this fixes: previously this was a hardcoded 0.4s target. Any
+    style with compress_duration < 0.4s (e.g. the "Aggressive" preset's
+    0.3s, or a fast-paced reference video's threshold, which can go as
+    low as 0.15s) produced pauses classified COMPRESS that were never
+    actually shortened — a duration below 0.4s always clamped back to
+    the pause's own end, i.e. a zero-length cut / no-op.
+
+    The target is set to half of compress_duration, which guarantees it
+    is always strictly smaller than any pause that was classified as
+    COMPRESS (those pauses are, by definition, longer than
+    compress_duration) — so a real cut always happens. It's bounded to
+    a sane [0.05s, 0.6s] range so behaviour stays predictable at both
+    extremes.
+    """
+    compress_duration = (style_profile or {}).get('compress_duration', 0.8)
+    target = compress_duration * 0.5
+    target = max(0.05, min(target, 0.6))
+    # Extra safety margin: never let the target reach the threshold itself,
+    # even if compress_duration is unusually small.
+    target = min(target, max(0.05, compress_duration - 0.05))
+    return round(target, 3)
 
 
 @dataclass
@@ -94,11 +127,15 @@ SUBTITLE_PRESETS = {
         font_size=16,
         back_colour="&HFF000000",      # fully transparent box
     ),
+
+    # Sentinel — signals the animated ASS code path in render_final_video().
+    # No SubtitleStyle object needed; all styling lives in the .ass file.
+    "animated": None,
 }
 
 
 def get_keep_segments(pause_df: pd.DataFrame, video_duration: float,
-                      filler_cuts: list = None):
+                      filler_cuts: list = None, style_profile: dict = None):
     """
     Converts the pause decision table into a list of (start, end) video
     segments that should be kept and stitched together.
@@ -108,8 +145,19 @@ def get_keep_segments(pause_df: pd.DataFrame, video_duration: float,
     They are merged with the pause CUT decisions into one unified cut list
     before calculating keep segments, so the render engine sees a single
     sorted list of regions to remove.
+
+    style_profile: the same profile passed to decision_engine.classify_pauses().
+    Used to derive how aggressively COMPRESS-flagged pauses should actually
+    be shortened (see _resolve_compress_target) — this is what makes the
+    "Gap Removal" preset selected in the UI (Natural/Balanced/Aggressive) or
+    a reference video's detected pacing actually take effect on COMPRESS
+    pauses, not just on which pauses get flagged CUT.
     """
     print("   Calculating final video segments...")
+
+    compress_target = _resolve_compress_target(style_profile)
+    print(f"   ⏱️  Compress target: {compress_target}s "
+          f"(from compress_duration={  (style_profile or {}).get('compress_duration', 'default') })")
 
     # ── Build unified cut list from pause decisions + filler cuts ────────
     # Format: list of (start, end, label) sorted by start time
@@ -124,8 +172,11 @@ def get_keep_segments(pause_df: pd.DataFrame, video_duration: float,
             if decision == 'CUT':
                 all_cuts.append((gap_start, gap_end, 'PAUSE_CUT'))
             elif decision == 'COMPRESS':
-                # COMPRESS: keep only the first COMPRESS_TARGET_DURATION seconds
-                compressed_end = min(gap_start + COMPRESS_TARGET_DURATION, gap_end)
+                # COMPRESS: keep only the first `compress_target` seconds of
+                # the pause, cut the rest. compress_target is derived from
+                # the style profile so it always shortens the pause instead
+                # of silently doing nothing (see _resolve_compress_target).
+                compressed_end = min(gap_start + compress_target, gap_end)
                 all_cuts.append((compressed_end, gap_end, 'COMPRESS'))
 
     if filler_cuts:
@@ -177,13 +228,14 @@ def get_keep_segments(pause_df: pd.DataFrame, video_duration: float,
     return keep_segments
 
 
-def _make_safe_srt(srt_path: str) -> str:
+def _make_safe_srt(srt_path: str, job_prefix: str = "job") -> str:
     """
     Copy the SRT into cwd under a plain short name.
     FFmpeg subtitle filter on Windows breaks on any path containing
     drive letters, backslashes, or spaces.
+    job_prefix keeps parallel clip renders from overwriting each other's copy.
     """
-    safe_local = "subs_working_copy.srt"
+    safe_local = f"subs_{job_prefix}_working_copy.srt"
     shutil.copy2(srt_path, safe_local)
     return safe_local
 
@@ -193,7 +245,9 @@ def render_final_video(
     segments:        list,
     srt_path:        str,
     output_filename: str = "final_edited_video.mp4",
-    subtitle_style:  "SubtitleStyle | None" = None
+    subtitle_style:  "SubtitleStyle | None" = None,
+    job_prefix:      str = "job",    # unique per clip — prevents temp file collisions
+    ass_path:        str = None,     # if set, use animated ASS burn path instead of SRT
 ):
     """
     Two-pass render:
@@ -212,7 +266,7 @@ def render_final_video(
     if not segments:
         raise RuntimeError("No segments to render — nothing was produced.")
 
-    intermediate = f"_intermediate_{os.path.basename(output_filename)}"
+    intermediate = f"_intermediate_{job_prefix}_{os.path.basename(output_filename)}"
     clip_files   = []
     failed_clips = []
 
@@ -227,7 +281,7 @@ def render_final_video(
             print(f"   ⚠️  Skipping segment {i+1} — too short ({duration:.3f}s)")
             continue
 
-        clip_name = f"temp_clip_{i:04d}.mp4"
+        clip_name = f"temp_clip_{job_prefix}_{i:04d}.mp4"
         print(f"   🎬 Clip {i+1}/{len(segments)}: {start:.2f}s → {end:.2f}s ({duration:.2f}s)")
 
         command = [
@@ -257,7 +311,7 @@ def render_final_video(
         raise RuntimeError("All clips failed to extract. Check FFmpeg installation.")
 
     # Write concat manifest
-    list_file = "concat_list.txt"
+    list_file = f"concat_list_{job_prefix}.txt"
     with open(list_file, "w") as f:
         for clip in clip_files:
             abs_path = os.path.abspath(clip).replace('\\', '/')
@@ -295,18 +349,31 @@ def render_final_video(
     if not concat_ok:
         raise RuntimeError("Concat step failed — intermediate video not produced.")
 
+    # NOTE: intermediate is kept on disk after this function returns.
+    # app.py stores its path in job_store['intermediate_path'] so that
+    # POST /restyle/{job_id} can re-burn subtitles without re-encoding.
+    # It is cleaned up when the job is removed from job_store (on download).
+
     # ------------------------------------------------------------------
     # Pass 2: Burn remapped subtitles onto the stitched intermediate
     # ------------------------------------------------------------------
     print("\n   Pass 2: Burning subtitles onto stitched video...")
 
-    safe_srt = _make_safe_srt(srt_path)
-
-    # Build the subtitle filter string with optional force_style
-    style = subtitle_style or SubtitleStyle()   # use default if none provided
-    force = style.to_force_style()
-    sub_filter = f"subtitles={safe_srt}:force_style='{force}'"
-    print(f"   🎨 Subtitle style: {force}")
+    if ass_path and os.path.exists(ass_path):
+        # ── Animated ASS path ──────────────────────────────────────────
+        # Copy to a safe local name (avoids Windows path issues in FFmpeg)
+        safe_sub = f"subs_{job_prefix}_anim.ass"
+        shutil.copy2(ass_path, safe_sub)
+        safe_sub_fwd = safe_sub.replace('\\', '/')
+        sub_filter = f"ass={safe_sub_fwd}"
+        print(f"   🎨 Animated subtitle mode — ASS filter: {safe_sub}")
+    else:
+        # ── Standard SRT path (all other presets) ──────────────────────
+        safe_sub = _make_safe_srt(srt_path, job_prefix)
+        style    = subtitle_style or SubtitleStyle()
+        force    = style.to_force_style()
+        sub_filter = f"subtitles={safe_sub}:force_style='{force}'"
+        print(f"   🎨 Subtitle style: {force}")
 
     burn_cmd = [
         "ffmpeg", "-y",
@@ -327,10 +394,18 @@ def render_final_video(
     except subprocess.CalledProcessError as e:
         print(f"   ❌ Subtitle burn failed:\n{e.stderr[-400:]}")
     finally:
-        if os.path.exists(safe_srt):
-            os.remove(safe_srt)
-        if os.path.exists(intermediate):
-            os.remove(intermediate)
+        if os.path.exists(safe_sub):
+            os.remove(safe_sub)
+        # NOTE: intermediate is intentionally NOT deleted here.
+        # It is kept so POST /restyle/{job_id} can re-burn with a different
+        # subtitle style without re-running the full pipeline.
+        # app.py is responsible for cleaning it up on job removal.
 
     if not burn_ok:
+        # Clean up intermediate on failure since it's useless without output
+        if os.path.exists(intermediate):
+            os.remove(intermediate)
         raise RuntimeError("Subtitle burn step failed — final video not produced.")
+
+    # Return intermediate path so app.py can store it in job_store
+    return intermediate

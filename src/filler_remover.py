@@ -18,7 +18,7 @@ FILLER_WORDS = {
 # with punctuation stripped rather than doing substring matching.
 
 
-def detect_fillers(transcript_data: dict) -> list:
+def detect_fillers(transcript_data: dict, filler_words: set = None) -> list:
     """
     Scans the Whisper transcript for filler words and returns a list of
     (start, end) timestamp tuples for every filler word found.
@@ -42,13 +42,14 @@ def detect_fillers(transcript_data: dict) -> list:
     if not all_words:
         return []
 
+    active_fillers = filler_words if filler_words is not None else FILLER_WORDS
     raw_cuts = []
 
     for word_data in all_words:
         word_text  = word_data.get('word', '').strip()
         word_clean = word_text.lower().strip('.,!?;:"\'-()[]')
 
-        if word_clean in FILLER_WORDS:
+        if word_clean in active_fillers:
             start = word_data.get('start', 0.0)
             end   = word_data.get('end',   0.0)
             if end > start:   # skip zero-length Whisper quirks

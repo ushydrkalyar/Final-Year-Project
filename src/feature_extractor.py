@@ -109,3 +109,78 @@ if __name__ == "__main__":
             print(pause_data.to_string(index=False))
         else:
             print("\nNo pauses detected.")
+
+
+# ---------------------------------------------------------------------------
+# Leading and trailing silence detection
+# ---------------------------------------------------------------------------
+
+def detect_edge_silences(transcript_data: dict, audio_path: str,
+                         min_silence: float = 0.3) -> tuple:
+    """
+    Detects silence at the START and END of the video that falls outside
+    the word-gap detection range of extract_pause_features().
+
+    Returns (leading_cut_end, trailing_cut_start):
+      - leading_cut_end:    seconds — cut from 0.0 to this point
+      - trailing_cut_start: seconds — cut from this point to end of video,
+                             or None if there's no significant trailing
+                             silence (caller should not add a trailing cut).
+
+    min_silence: minimum duration in seconds to bother cutting.
+                 Silences shorter than this are left alone.
+    """
+    import numpy as np
+
+    all_words = []
+    for segment in transcript_data.get('segments', []):
+        all_words.extend(segment.get('words', []))
+
+    if not all_words:
+        return (0.0, None)
+
+    first_word_start = all_words[0].get('start', 0.0)
+    last_word_end    = all_words[-1].get('end',   0.0)
+
+    # Leading silence: time from 0 to first word
+    leading_duration = first_word_start
+
+    leading_cut_end = 0.0
+    if leading_duration >= min_silence:
+        # Keep a tiny 0.1s buffer before the first word
+        # so it doesn't feel abrupt
+        leading_cut_end = max(0.0, first_word_start - 0.1)
+        print(f"   ✂️  Leading silence detected: {leading_duration:.2f}s "
+              f"→ cutting 0.0s to {leading_cut_end:.2f}s")
+    else:
+        print(f"   ✅ No significant leading silence ({leading_duration:.2f}s < {min_silence}s threshold)")
+
+    # Trailing silence: time from the last spoken word to the actual end
+    # of the audio track. Whisper's transcript only tells us when speech
+    # *stops* — it says nothing about how much dead air follows (the
+    # speaker could pause for 10s before the recording is cut, or the
+    # camera could simply keep rolling after they finish talking). That
+    # has to be measured against the real audio duration, not assumed.
+    trailing_cut_start = None
+    try:
+        real_duration = librosa.get_duration(path=audio_path)
+    except TypeError:
+        # older librosa versions use the `filename` kwarg instead of `path`
+        real_duration = librosa.get_duration(filename=audio_path)
+    except Exception as e:
+        print(f"   ⚠️  Could not read audio duration for trailing-silence check: {e}")
+        real_duration = None
+
+    if real_duration is not None:
+        trailing_duration = real_duration - last_word_end
+        if trailing_duration >= min_silence:
+            # Keep a tiny 0.1s buffer after the last word so the cut
+            # doesn't feel abrupt, same as the leading-silence buffer.
+            trailing_cut_start = min(real_duration, last_word_end + 0.1)
+            print(f"   ✂️  Trailing silence detected: {trailing_duration:.2f}s "
+                  f"→ cutting {trailing_cut_start:.2f}s to {real_duration:.2f}s")
+        else:
+            print(f"   ✅ No significant trailing silence "
+                  f"({trailing_duration:.2f}s < {min_silence}s threshold)")
+
+    return (leading_cut_end, trailing_cut_start)

@@ -61,17 +61,34 @@ def apply_feedback(
     print(f"      Segment: {timestamp_start:.2f}s – {timestamp_end:.2f}s")
     print(f"      Correction: {correction}")
 
-    corrected_path = f"corrected_{job_id}.mp4"
+    corrected_path = f"corrected_{job_id[:8]}.mp4"
+    temp_prefix = f"fb_{job_id[:8]}"
 
     if correction == 'CUT':
-        _splice_out(edited_video, timestamp_start, timestamp_end, corrected_path)
+        _splice_out(edited_video, timestamp_start, timestamp_end, corrected_path,
+                    temp_prefix)
     else:  # KEEP
-        _splice_in(original_video, edited_video, timestamp_start, timestamp_end, corrected_path)
+        insert_at = _original_to_edited_time(
+            timestamp_start, job.get('keep_segments', [])
+        )
+        _splice_in(original_video, edited_video,
+                   timestamp_start, timestamp_end, insert_at,
+                   corrected_path, temp_prefix)
 
-    # Update job store so subsequent feedbacks use the corrected video
-    job_store[job_id]['output_path'] = corrected_path
     print(f"   ✅ Corrected video saved: {corrected_path}")
     return corrected_path
+
+
+def _original_to_edited_time(original_time: float, keep_segments: list) -> float:
+    """Map an original timestamp to the appropriate edited insertion point."""
+    edited_offset = 0.0
+    for seg_start, seg_end in keep_segments:
+        if original_time <= seg_start:
+            return edited_offset
+        if original_time < seg_end:
+            return edited_offset + (original_time - seg_start)
+        edited_offset += seg_end - seg_start
+    return edited_offset
 
 
 # ---------------------------------------------------------------------------
@@ -87,7 +104,7 @@ def _run(cmd: list, label: str):
 
 
 def _splice_out(edited_video: str, cut_start: float, cut_end: float,
-                output_path: str):
+                output_path: str, temp_prefix: str):
     """
     Removes a time range from the edited video by:
       1. Extracting the part BEFORE the cut
@@ -96,9 +113,9 @@ def _splice_out(edited_video: str, cut_start: float, cut_end: float,
 
     This implements the "I want this segment removed" feedback.
     """
-    before_clip = "_fb_before.mp4"
-    after_clip  = "_fb_after.mp4"
-    list_file   = "_fb_concat.txt"
+    before_clip = f"_{temp_prefix}_before.mp4"
+    after_clip  = f"_{temp_prefix}_after.mp4"
+    list_file   = f"_{temp_prefix}_concat.txt"
 
     try:
         # Part before the cut
@@ -145,7 +162,8 @@ def _splice_out(edited_video: str, cut_start: float, cut_end: float,
 
 
 def _splice_in(original_video: str, edited_video: str,
-               keep_start: float, keep_end: float, output_path: str):
+               original_start: float, original_end: float,
+               insert_at: float, output_path: str, temp_prefix: str):
     """
     Inserts a segment from the ORIGINAL video back into the edited video at
     the corresponding position. This implements the "you cut too much here,
@@ -155,30 +173,30 @@ def _splice_in(original_video: str, edited_video: str,
     insertion should happen — we insert the original-video segment at that
     point in the edited timeline.
     """
-    before_clip   = "_fb_before.mp4"
-    restored_clip = "_fb_restored.mp4"
-    after_clip    = "_fb_after.mp4"
-    list_file     = "_fb_concat.txt"
+    before_clip   = f"_{temp_prefix}_before.mp4"
+    restored_clip = f"_{temp_prefix}_restored.mp4"
+    after_clip    = f"_{temp_prefix}_after.mp4"
+    list_file     = f"_{temp_prefix}_concat.txt"
 
-    duration = keep_end - keep_start
+    duration = original_end - original_start
 
     try:
         # Part of edited video before insertion point
-        print(f"      Extracting before-segment (0 – {keep_start:.2f}s from edited)...")
+        print(f"      Extracting before-segment (0 – {insert_at:.2f}s from edited)...")
         _run([
             "ffmpeg", "-y",
             "-i", edited_video,
-            "-t", str(keep_start),
+            "-t", str(insert_at),
             "-c:v", "libx264", "-preset", "fast", "-crf", "23",
             "-c:a", "aac", "-b:a", "192k",
             before_clip
         ], "Before-segment")
 
         # The segment to restore from the original video
-        print(f"      Restoring {duration:.2f}s from original at {keep_start:.2f}s...")
+        print(f"      Restoring {duration:.2f}s from original at {original_start:.2f}s...")
         _run([
             "ffmpeg", "-y",
-            "-ss", str(keep_start),
+            "-ss", str(original_start),
             "-i", original_video,
             "-t", str(duration),
             "-c:v", "libx264", "-preset", "fast", "-crf", "23",
@@ -187,10 +205,10 @@ def _splice_in(original_video: str, edited_video: str,
         ], "Restore-segment")
 
         # Part of edited video after insertion point
-        print(f"      Extracting after-segment ({keep_end:.2f}s – end from edited)...")
+        print(f"      Extracting after-segment ({insert_at:.2f}s – end from edited)...")
         _run([
             "ffmpeg", "-y",
-            "-ss", str(keep_end),
+            "-ss", str(insert_at),
             "-i", edited_video,
             "-c:v", "libx264", "-preset", "fast", "-crf", "23",
             "-c:a", "aac", "-b:a", "192k",

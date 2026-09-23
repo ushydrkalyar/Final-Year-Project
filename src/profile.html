@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your profile — CutSmart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0F1117;
+      --card: #1A1D29;
+      --card2: #22263A;
+      --card3: #2A2F45;
+      --border: rgba(255, 255, 255, .07);
+      --border2: rgba(255, 255, 255, .13);
+      --primary: #6366F1;
+      --primary-d: #4F46E5;
+      --primary-g: rgba(99, 102, 241, .14);
+      --success: #22C55E;
+      --success-g: rgba(34, 197, 94, .12);
+      --danger: #EF4444;
+      --danger-g: rgba(239, 68, 68, .12);
+      --warn: #F59E0B;
+      --warn-g: rgba(245, 158, 11, .12);
+      --t1: #FFFFFF;
+      --t2: #94A3B8;
+      --t3: #475569;
+      --radius: 8px;
+      --radius-lg: 14px;
+      --tr: .15s cubic-bezier(.4, 0, .2, 1);
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --topbar: 54px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--t1);
+      display: flex;
+      flex-direction: column
+    }
+
+    button {
+      font-family: var(--font);
+      cursor: pointer;
+      border: none
+    }
+
+    input {
+      font-family: var(--font);
+      outline: none
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      height: var(--topbar);
+      flex-shrink: 0;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .04)
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14.5px;
+      text-decoration: none;
+      color: var(--t1)
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .back {
+      font-size: 12.5px;
+      color: var(--t2);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: var(--tr);
+      font-weight: 500
+    }
+
+    .back:hover {
+      color: var(--primary)
+    }
+
+    .back svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      min-height: 0
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 16px;
+      width: 100%;
+      max-width: 760px;
+      align-items: start
+    }
+
+    /* ── Left: Identity card ── */
+    .id-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .05)
+    }
+
+    .avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      margin: 0 auto 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .15)
+    }
+
+    .id-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--t1);
+      margin-bottom: 4px
+    }
+
+    .id-email {
+      font-size: 11.5px;
+      color: var(--t2);
+      margin-bottom: 6px;
+      word-break: break-all
+    }
+
+    .id-since {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--t3)
+    }
+
+    .id-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 8px;
+      border-radius: var(--radius);
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--danger);
+      font-size: 12.5px;
+      font-weight: 600;
+      transition: var(--tr);
+      cursor: pointer
+    }
+
+    .logout-btn:hover {
+      background: var(--danger-g);
+      border-color: var(--danger)
+    }
+
+    /* ── Right: Content card ── */
+    .content-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .05)
+    }
+
+    .section {
+      padding: 20px 22px
+    }
+
+    .section+.section {
+      border-top: 1px solid var(--border)
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--t2);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 16px
+    }
+
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--t2);
+      margin-bottom: 5px;
+      letter-spacing: .03em;
+      text-transform: uppercase
+    }
+
+    .field {
+      margin-bottom: 14px
+    }
+
+    .field:last-of-type {
+      margin-bottom: 0
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    input[type=text],
+    input[type=password],
+    input[type=email] {
+      width: 100%;
+      background: var(--card3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--t1);
+      font-size: 13px;
+      padding: 8px 11px;
+      transition: var(--tr)
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-g);
+      background: #fff
+    }
+
+    input:disabled {
+      color: var(--t3);
+      cursor: not-allowed;
+      background: var(--card3)
+    }
+
+    /* ── Password multi-step ── */
+    #pwStep2,
+    #pwWrong,
+    #pwSuccess {
+      display: none
+    }
+
+    .banner {
+      font-size: 12px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.5
+    }
+
+    .banner.error {
+      background: var(--danger-g);
+      color: var(--danger);
+      border: 1px solid rgba(220, 38, 38, .2);
+      display: flex
+    }
+
+    .banner.success {
+      background: var(--success-g);
+      color: var(--success);
+      border: 1px solid rgba(22, 163, 74, .2);
+      display: flex
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--t2);
+      margin-bottom: 12px;
+      margin-top: -8px;
+      line-height: 1.5
+    }
+
+    .hint a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer
+    }
+
+    .hint a:hover {
+      text-decoration: underline
+    }
+
+    /* ── Buttons ── */
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px
+    }
+
+    .btn {
+      padding: 8px 18px;
+      border-radius: var(--radius);
+      font-size: 12.5px;
+      font-weight: 700;
+      transition: var(--tr);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      border: none
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: #fff
+    }
+
+    .btn.primary:hover:not(:disabled) {
+      background: var(--primary-d);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, .3)
+    }
+
+    .btn.primary:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--t2)
+    }
+
+    .btn.ghost:hover {
+      color: var(--t1);
+      border-color: rgba(0, 0, 0, .25)
+    }
+
+    .spin {
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(255, 255, 255, .35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none
+    }
+
+    .loading .spin {
+      display: inline-block
+    }
+
+    .loading .lbl {
+      display: none
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      background: var(--t1);
+      color: var(--bg);
+      border-radius: var(--radius);
+      padding: 9px 18px;
+      font-size: 12.5px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .toast.success {
+      background: #166534;
+      color: #dcfce7
+    }
+
+    .toast.error {
+      background: #991b1b;
+      color: #fee2e2
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <a class="logo" href="/editor.html">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" width="15" height="15">
+          <rect x="2" y="9.5" width="3" height="5" rx="1.5" fill="white" />
+          <rect x="7" y="5.5" width="3" height="13" rx="1.5" fill="white" />
+          <rect x="14" y="5.5" width="3" height="13" rx="1.5" fill="white" />
+          <rect x="19" y="9.5" width="3" height="5" rx="1.5" fill="white" />
+        </svg></div>
+      CutSmart
+    </a>
+    <a class="back" href="/editor.html">
+      <svg viewBox="0 0 24 24">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Back to editor
+    </a>
+  </header>
+
+  <div class="main">
+    <div class="layout">
+
+      <!-- Left: Identity -->
+      <div class="id-card">
+        <div class="avatar" id="bigAvatar">…</div>
+        <div class="id-name" id="displayName">Loading…</div>
+        <div class="id-email" id="displayEmail"></div>
+        <div class="id-since" id="displaySince"></div>
+        <div class="id-divider"></div>
+        <button class="logout-btn" id="logoutBtn">Sign out</button>
+      </div>
+
+      <!-- Right: Sections -->
+      <div class="content-card">
+
+        <!-- ─ Profile details ─ -->
+        <div class="section">
+          <div class="section-title">Profile details</div>
+          <form id="profileForm">
+            <div class="row2">
+              <div class="field">
+                <label for="nameInput">Name</label>
+                <input type="text" id="nameInput" placeholder="Your name" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="emailInput">Email</label>
+                <input type="email" id="emailInput" disabled title="Email cannot be changed" />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn primary" id="saveNameBtn">
+                <span class="spin"></span><span class="lbl">Save changes</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ─ Change password ─ -->
+        <div class="section">
+          <div class="section-title">Change password</div>
+
+          <!-- Step 1: verify current -->
+          <div id="pwStep1">
+            <div class="banner error" id="pwStep1Err"></div>
+            <div class="field">
+              <label for="currentPw">Current password</label>
+              <input type="password" id="currentPw" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+            <div class="btn-row" style="margin-top:10px">
+              <button class="btn primary" id="verifyPwBtn" onclick="verifyCurrentPw()">
+                <span class="spin"></span><span class="lbl">Continue</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 1b: wrong password -->
+          <div id="pwWrong">
+            <div class="banner error" style="display:flex">Incorrect password.</div>
+            <p class="hint">Don't remember it? <a onclick="sendForgotEmail()">Send a reset link to your email →</a></p>
+            <div class="banner success" id="pwResetSent"></div>
+            <div class="btn-row" style="margin-top:4px">
+              <button class="btn ghost" onclick="resetPwFlow()">Try again</button>
+            </div>
+          </div>
+
+          <!-- Step 2: new password -->
+          <div id="pwStep2">
+            <div class="banner error" id="pwStep2Err"></div>
+            <div class="row2">
+              <div class="field">
+                <label for="newPw">New password</label>
+                <input type="password" id="newPw" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+              <div class="field">
+                <label for="confirmPw">Confirm</label>
+                <input type="password" id="confirmPw" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn ghost" onclick="resetPwFlow()">Cancel</button>
+              <button class="btn primary" id="savePwBtn" onclick="saveNewPw()">
+                <span class="spin"></span><span class="lbl">Update password</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: success -->
+          <div id="pwSuccess">
+            <div class="banner success" style="display:flex;margin-bottom:4px">Password updated successfully.</div>
+            <div class="btn-row">
+              <button class="btn ghost" onclick="resetPwFlow()">Change again</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content-card -->
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = window.location.origin;
+    let CURRENT_USER = null;
+
+    function toast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `toast show ${type}`;
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    async function loadProfile() {
+      try {
+        const r = await fetch(`${API}/auth/me`, { credentials: 'include' });
+        if (!r.ok) throw new Error();
+        const { user } = await r.json();
+        CURRENT_USER = user;
+        document.getElementById('displayName').textContent = user.name;
+        document.getElementById('displayEmail').textContent = user.email;
+        document.getElementById('displaySince').textContent =
+          'Member since ' + new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+        document.getElementById('nameInput').value = user.name;
+        document.getElementById('emailInput').value = user.email;
+        const av = document.getElementById('bigAvatar');
+        av.textContent = user.initials;
+        av.style.background = user.avatar_color;
+      } catch {
+        window.location.href = '/login.html?next=/profile.html';
+      }
+    }
+    loadProfile();
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('nameInput').value.trim();
+      if (name.length < 2) { toast('Name must be at least 2 characters.', 'error'); return; }
+      const btn = document.getElementById('saveNameBtn');
+      btn.disabled = true; btn.classList.add('loading');
+      try {
+        const r = await fetch(`${API}/auth/me`, {
+          method: 'PUT', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.detail || 'Failed');
+        CURRENT_USER = data.user;
+        document.getElementById('displayName').textContent = data.user.name;
+        document.getElementById('bigAvatar').textContent = data.user.initials;
+        toast('Profile updated successfully.');
+      } catch (err) { toast(err.message, 'error'); }
+      finally { btn.disabled = false; btn.classList.remove('loading'); }
+    });
+
+    function resetPwFlow() {
+      ['pwStep1', 'pwStep2', 'pwWrong', 'pwSuccess'].forEach(id =>
+        document.getElementById(id).style.display = id === 'pwStep1' ? 'block' : 'none');
+      ['currentPw', 'newPw', 'confirmPw'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('pwStep1Err').style.display = 'none';
+      document.getElementById('pwResetSent').style.display = 'none';
+    }
+
+    async function verifyCurrentPw() {
+      const pw = document.getElementById('currentPw').value;
+      if (!pw) { showErr('pwStep1Err', 'Enter your current password.'); return; }
+      const btn = document.getElementById('verifyPwBtn');
+      btn.disabled = true; btn.classList.add('loading');
+      document.getElementById('pwStep1Err').style.display = 'none';
+      try {
+        const r = await fetch(`${API}/auth/verify-password`, {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current_password: pw }),
+        });
+        if (r.ok) {
+          document.getElementById('pwStep1').style.display = 'none';
+          document.getElementById('pwStep2').style.display = 'block';
+          document.getElementById('newPw').focus();
+        } else {
+          const data = await r.json();
+          if (data.detail === 'wrong_password') {
+            document.getElementById('pwStep1').style.display = 'none';
+            document.getElementById('pwWrong').style.display = 'block';
+          } else if (data.detail === 'no_password') {
+            showErr('pwStep1Err', 'Your account uses Google Sign-In — no password set.');
+          } else {
+            showErr('pwStep1Err', data.detail || 'Something went wrong.');
+          }
+        }
+      } catch { showErr('pwStep1Err', 'Could not reach the server.'); }
+      finally { btn.disabled = false; btn.classList.remove('loading'); }
+    }
+
+    async function saveNewPw() {
+      const pw = document.getElementById('newPw').value;
+      const pw2 = document.getElementById('confirmPw').value;
+      document.getElementById('pwStep2Err').style.display = 'none';
+      if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/[0-9]/.test(pw)) {
+        showErr('pwStep2Err', 'Password must be at least 8 characters with letters and numbers.'); return;
+      }
+      if (pw !== pw2) { showErr('pwStep2Err', 'Passwords do not match.'); return; }
+      const btn = document.getElementById('savePwBtn');
+      btn.disabled = true; btn.classList.add('loading');
+      try {
+        const r = await fetch(`${API}/auth/me`, {
+          method: 'PUT', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.detail || 'Failed to update password.');
+        document.getElementById('pwStep2').style.display = 'none';
+        document.getElementById('pwSuccess').style.display = 'block';
+      } catch (err) { showErr('pwStep2Err', err.message); }
+      finally { btn.disabled = false; btn.classList.remove('loading'); }
+    }
+
+    async function sendForgotEmail() {
+      if (!CURRENT_USER?.email) return;
+      try {
+        await fetch(`${API}/auth/forgot-password`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: CURRENT_USER.email }),
+        });
+        const el = document.getElementById('pwResetSent');
+        el.textContent = `Reset link sent to ${CURRENT_USER.email}. Check your inbox.`;
+        el.style.display = 'flex';
+      } catch { toast('Could not send reset email.', 'error'); }
+    }
+
+    function showErr(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg; el.style.display = 'flex';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try { await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }); } catch { }
+      window.location.href = '/welcome.html';
+    });
+  </script>
+</body>
+
+</html>

@@ -9,17 +9,23 @@ from feature_extractor import extract_pause_features
 
 def download_youtube_audio(url: str, output_filename: str = "reference_audio.wav") -> str | None:
     """Downloads audio from a YouTube URL using yt-dlp."""
+    import glob, shutil
     print(f"   Downloading reference audio from:\n   {url}")
 
     stem = output_filename.removesuffix('.wav')
 
+    # Use %(ext)s so yt-dlp fills in the real extension before FFmpeg converts.
+    # After FFmpegExtractAudio the output will be stem.wav regardless of
+    # the source container — but we also glob for it in case yt-dlp appends
+    # extra format tokens to the filename in certain versions.
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'wav',
+            'preferredquality': '192',
         }],
-        'outtmpl': stem,
+        'outtmpl': stem + '.%(ext)s',
         'quiet': True,
         'no_warnings': True,
     }
@@ -28,16 +34,69 @@ def download_youtube_audio(url: str, output_filename: str = "reference_audio.wav
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
+        # Primary expected path
         expected_path = stem + '.wav'
         if os.path.exists(expected_path):
             print(f"   ✅ Reference audio saved: {expected_path}")
             return expected_path
-        else:
-            print(f"   ❌ File not found after download: {expected_path}")
-            return None
+
+        # Fallback: glob for any .wav file matching the stem
+        # (some yt-dlp versions append codec/format tokens)
+        matches = glob.glob(stem + '*.wav')
+        if matches:
+            best = matches[0]
+            if best != expected_path:
+                shutil.move(best, expected_path)
+            print(f"   ✅ Reference audio saved (glob fallback): {expected_path}")
+            return expected_path
+
+        print(f"   ❌ File not found after download: {expected_path}")
+        # List what IS in the directory for debugging
+        parent = os.path.dirname(stem) or '.'
+        nearby = [f for f in os.listdir(parent) if os.path.basename(stem)[:8] in f]
+        if nearby:
+            print(f"   ℹ️  Files with matching prefix: {nearby}")
+        return None
 
     except Exception as e:
         print(f"   ❌ yt-dlp error: {e}")
+        return None
+
+
+def download_youtube_video(url: str, output_filename: str = "reference_video.mp4") -> str | None:
+    """Download a compact MP4 reference video for visual-style analysis."""
+    import glob
+
+    stem, _ = os.path.splitext(output_filename)
+    expected_path = stem + '.mp4'
+    ydl_opts = {
+        # 720p is sufficient for scene, transition, and colour analysis while
+        # avoiding an unnecessarily large temporary reference download.
+        'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
+        'merge_output_format': 'mp4',
+        'outtmpl': stem + '.%(ext)s',
+        'quiet': True,
+        'no_warnings': True,
+    }
+
+    try:
+        print("   Downloading reference video for CV analysis...")
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+
+        if os.path.exists(expected_path):
+            print(f"   Reference video saved: {expected_path}")
+            return expected_path
+
+        matches = glob.glob(stem + '*.mp4')
+        if matches:
+            print(f"   Reference video saved: {matches[0]}")
+            return matches[0]
+
+        print("   Reference video was not produced by yt-dlp.")
+        return None
+    except Exception as exc:
+        print(f"   Reference video download failed: {exc}")
         return None
 
 

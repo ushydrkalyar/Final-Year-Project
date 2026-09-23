@@ -1,0 +1,38 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: AnimSub,Arial,60,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,1,2,60,60,60,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.10,0:00:00.42,AnimSub,,0000,0000,0000,,{\c&H0000FFFF&}{\b1}One{\b0} {\c&H80FFFFFF&}of {\c&H80FFFFFF&}these {\c&H80FFFFFF&}ads{\c&H00FFFFFF&}
+Dialogue: 0,0:00:00.42,0:00:00.50,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}One {\c&H0000FFFF&}{\b1}of{\b0} {\c&H80FFFFFF&}these {\c&H80FFFFFF&}ads{\c&H00FFFFFF&}
+Dialogue: 0,0:00:00.50,0:00:00.66,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}One {\c&H00FFFFFF&}of {\c&H0000FFFF&}{\b1}these{\b0} {\c&H80FFFFFF&}ads{\c&H00FFFFFF&}
+Dialogue: 0,0:00:00.66,0:00:00.84,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}One {\c&H00FFFFFF&}of {\c&H00FFFFFF&}these {\c&H0000FFFF&}{\b1}ads{\b0}{\c&H00FFFFFF&}
+Dialogue: 0,0:00:00.84,0:00:01.00,AnimSub,,0000,0000,0000,,{\c&H0000FFFF&}{\b1}was{\b0} {\c&H80FFFFFF&}made {\c&H80FFFFFF&}by {\c&H80FFFFFF&}AI,{\c&H00FFFFFF&}
+Dialogue: 0,0:00:01.00,0:00:01.14,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}was {\c&H0000FFFF&}{\b1}made{\b0} {\c&H80FFFFFF&}by {\c&H80FFFFFF&}AI,{\c&H00FFFFFF&}
+Dialogue: 0,0:00:01.14,0:00:01.36,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}was {\c&H00FFFFFF&}made {\c&H0000FFFF&}{\b1}by{\b0} {\c&H80FFFFFF&}AI,{\c&H00FFFFFF&}
+Dialogue: 0,0:00:01.36,0:00:01.68,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}was {\c&H00FFFFFF&}made {\c&H00FFFFFF&}by {\c&H0000FFFF&}{\b1}AI,{\b0}{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.02,0:00:02.12,AnimSub,,0000,0000,0000,,{\c&H0000FFFF&}{\b1}the{\b0} {\c&H80FFFFFF&}other {\c&H80FFFFFF&}one {\c&H80FFFFFF&}by{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.12,0:00:02.30,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}the {\c&H0000FFFF&}{\b1}other{\b0} {\c&H80FFFFFF&}one {\c&H80FFFFFF&}by{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.30,0:00:02.46,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}the {\c&H00FFFFFF&}other {\c&H0000FFFF&}{\b1}one{\b0} {\c&H80FFFFFF&}by{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.46,0:00:02.70,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}the {\c&H00FFFFFF&}other {\c&H00FFFFFF&}one {\c&H0000FFFF&}{\b1}by{\b0}{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.70,0:00:02.86,AnimSub,,0000,0000,0000,,{\c&H0000FFFF&}{\b1}an{\b0} {\c&H80FFFFFF&}in {\c&H80FFFFFF&}-house {\c&H80FFFFFF&}designer.{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.86,0:00:02.96,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}an {\c&H0000FFFF&}{\b1}in{\b0} {\c&H80FFFFFF&}-house {\c&H80FFFFFF&}designer.{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.96,0:00:03.16,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}an {\c&H00FFFFFF&}in {\c&H0000FFFF&}{\b1}-house{\b0} {\c&H80FFFFFF&}designer.{\c&H00FFFFFF&}
+Dialogue: 0,0:00:03.16,0:00:03.54,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}an {\c&H00FFFFFF&}in {\c&H00FFFFFF&}-house {\c&H0000FFFF&}{\b1}designer.{\b0}{\c&H00FFFFFF&}
+Dialogue: 0,0:00:03.86,0:00:04.00,AnimSub,,0000,0000,0000,,{\c&H0000FFFF&}{\b1}Which{\b0} {\c&H80FFFFFF&}one {\c&H80FFFFFF&}do {\c&H80FFFFFF&}you{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.00,0:00:04.14,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}Which {\c&H0000FFFF&}{\b1}one{\b0} {\c&H80FFFFFF&}do {\c&H80FFFFFF&}you{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.14,0:00:04.25,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}Which {\c&H00FFFFFF&}one {\c&H0000FFFF&}{\b1}do{\b0} {\c&H80FFFFFF&}you{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.25,0:00:04.32,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}Which {\c&H00FFFFFF&}one {\c&H00FFFFFF&}do {\c&H0000FFFF&}{\b1}you{\b0}{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.32,0:00:04.48,AnimSub,,0000,0000,0000,,{\c&H0000FFFF&}{\b1}think{\b0} {\c&H80FFFFFF&}is {\c&H80FFFFFF&}the {\c&H80FFFFFF&}AI{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.48,0:00:04.64,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}think {\c&H0000FFFF&}{\b1}is{\b0} {\c&H80FFFFFF&}the {\c&H80FFFFFF&}AI{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.64,0:00:04.75,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}think {\c&H00FFFFFF&}is {\c&H0000FFFF&}{\b1}the{\b0} {\c&H80FFFFFF&}AI{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.75,0:00:04.98,AnimSub,,0000,0000,0000,,{\c&H00FFFFFF&}think {\c&H00FFFFFF&}is {\c&H00FFFFFF&}the {\c&H0000FFFF&}{\b1}AI{\b0}{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.98,0:00:05.33,AnimSub,,0000,0000,0000,,{\c&H0000FFFF&}{\b1}version?{\b0}{\c&H00FFFFFF&}
