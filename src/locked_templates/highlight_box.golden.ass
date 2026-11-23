@@ -1,0 +1,16 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Box,Poppins Medium,46,&H00141414,&H000000FF,&H00FFFFFF,&H00000000,0,0,0,0,100,100,0,0,3,13,0,5,64,64,20,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.18,0:00:02.43,Box,,0,0,0,,{\an5\pos(540,1190)\fs46\bord13\3a&H12&\blur0.6\shad0\1c&H00C8C8C8\fad(120,110)}{\1c&H00C8C8C8\t(120,210,\1c&H00141414)}All {\1c&H00C8C8C8\t(540,630,\1c&H00141414)}know {\1c&H00C8C8C8\t(960,1050,\1c&H00141414)}is {\1c&H00C8C8C8\t(1380,1470,\1c&H00141414)}just {\1c&H00C8C8C8\t(1800,1890,\1c&H00141414)}something
+Dialogue: 0,0:00:02.35,0:00:04.54,Box,,0,0,0,,{\an5\pos(540,1190)\fs46\bord13\3a&H12&\blur0.6\shad0\1c&H00C8C8C8\fad(120,110)}{\1c&H00C8C8C8\t(40,130,\1c&H00141414)}about {\1c&H00C8C8C8\t(459,549,\1c&H00141414)}you. {\1c&H00C8C8C8\t(879,969,\1c&H00141414)}Got {\1c&H00C8C8C8\t(1299,1389,\1c&H00141414)}me {\1c&H00C8C8C8\t(1720,1810,\1c&H00141414)}feeling
+Dialogue: 0,0:00:04.46,0:00:06.88,Box,,0,0,0,,{\an5\pos(540,1190)\fs46\bord13\3a&H12&\blur0.6\shad0\1c&H00C8C8C8\fad(120,110)}{\1c&H00C8C8C8\t(40,130,\1c&H00141414)}like {\1c&H00C8C8C8\t(459,549,\1c&H00141414)}I {\1c&H00C8C8C8\t(879,969,\1c&H00141414)}can't {\1c&H00C8C8C8\t(1299,1389,\1c&H00141414)}be {\1c&H00C8C8C8\t(1719,1809,\1c&H00141414)}without

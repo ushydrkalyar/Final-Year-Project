@@ -1,8 +1,9 @@
-import subprocess
-import json
-import math
 import pandas as pd
-from filler_remover import FILLER_WORDS
+
+import cut_list
+import media_probe
+from decision_engine import compress_target
+from filler_remover import find_fillers
 
 
 # ---------------------------------------------------------------------------
@@ -17,64 +18,66 @@ from filler_remover import FILLER_WORDS
 # ---------------------------------------------------------------------------
 
 
-def _ffprobe_duration(video_path: str) -> float:
-    """Uses FFprobe to get the exact duration of a video file in seconds."""
-    cmd = [
-        "ffprobe", "-v", "quiet",
-        "-print_format", "json",
-        "-show_format",
-        video_path
-    ]
-    try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        data   = json.loads(result.stdout)
-        return float(data.get('format', {}).get('duration', 0.0))
-    except Exception:
-        return 0.0
-
-
-def _ffprobe_metadata(video_path: str) -> dict:
-    """
-    Extracts full video metadata: duration, resolution, fps, codec, bitrate.
-    Returned in the evaluation report so the frontend can show file info.
-    """
-    cmd = [
-        "ffprobe", "-v", "quiet",
-        "-print_format", "json",
-        "-show_format",
-        "-show_streams",
-        video_path
-    ]
-    try:
-        result  = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        data    = json.loads(result.stdout)
-        fmt     = data.get('format', {})
-        streams = data.get('streams', [])
-
-        video_stream = next((s for s in streams if s.get('codec_type') == 'video'), {})
-        audio_stream = next((s for s in streams if s.get('codec_type') == 'audio'), {})
-
-        # Parse fps from r_frame_rate string like "30000/1001" or "25/1"
-        fps = 0.0
-        raw_fps = video_stream.get('r_frame_rate', '0/1')
-        try:
-            num, den = raw_fps.split('/')
-            fps = round(int(num) / int(den), 2) if int(den) > 0 else 0.0
-        except Exception:
-            pass
-
-        return {
-            'duration_s':  round(float(fmt.get('duration', 0)), 2),
-            'size_mb':     round(int(fmt.get('size', 0)) / 1024 / 1024, 2),
-            'bitrate_kbps':round(int(fmt.get('bit_rate', 0)) / 1000, 1),
-            'width':       video_stream.get('width',  0),
-            'height':      video_stream.get('height', 0),
-            'fps':         fps,
-            'video_codec': video_stream.get('codec_name', 'unknown'),
-            'audio_codec': audio_stream.get('codec_name', 'unknown'),
-        }
-    except Exception:
+def _file_metadata(video_path: str) -> dict:
+    """The file facts shown in the evaluation report."""
+    found = media_probe.info(video_path)
+    if not found:
         return {}
+    return {
+        'duration_s':  round(found.duration, 2),
+        'size_mb':     round(found.size_bytes / 1024 / 1024, 2),
+        'bitrate_kbps':round(found.bit_rate / 1000, 1),
+        'width':       found.width,
+        'height':      found.height,
+        'fps':         found.fps,
+        'video_codec': found.codec,
+        'audio_codec': found.audio_codec,
+    }
+
+
+MIN_PAUSE_S = 0.2   # gaps between words shorter than this are just articulation
+
+
+def _silence_stats(transcript_data, keep_segments, original_duration, edited_duration) -> dict:
+    """Silence share and mean pause, before and after the edit, from word timings.
+
+    Silence = time not covered by any spoken word. On the edited side only the
+    kept parts of the original count, so every cut can only lower it.
+    """
+    words = sorted((float(w['start']), float(w['end']))
+                   for seg in transcript_data.get('segments', []) for w in seg.get('words', [])
+                   if w.get('end') is not None and float(w['end']) > float(w['start']))
+    speech = []                       # words joined across articulation gaps
+    for ws, we in words:
+        if speech and ws - speech[-1][1] < MIN_PAUSE_S:
+            speech[-1] = (speech[-1][0], max(speech[-1][1], we))
+        else:
+            speech.append((ws, we))
+    speech = cut_list.normalize(speech, original_duration)
+    keep = cut_list.normalize(keep_segments or [(0.0, original_duration)], original_duration)
+
+    def covered(a, b):
+        return sum(max(0.0, min(b, e) - max(a, s)) for s, e in speech)
+
+    speech_total = sum(e - s for s, e in speech)
+    kept_len = sum(e - s for s, e in keep)
+    kept_speech = sum(covered(s, e) for s, e in keep)
+
+    def mean_gap(times):
+        gaps = [b[0] - a[1] for a, b in zip(times, times[1:]) if b[0] - a[1] >= MIN_PAUSE_S]
+        return sum(gaps) / len(gaps) if gaps else 0.0
+
+    edited, offset = [], 0.0          # word times mapped onto the edited timeline
+    for s, e in keep:
+        edited += [(offset + max(ws, s) - s, offset + min(we, e) - s) for ws, we in words if we > s and ws < e]
+        offset += e - s
+    return {
+        'silence_ratio_original': 100 * max(0.0, original_duration - speech_total) / original_duration
+                                  if original_duration > 0 else 0.0,
+        'silence_ratio_edited': 100 * max(0.0, kept_len - kept_speech) / kept_len if kept_len > 0 else 0.0,
+        'avg_pause_original': mean_gap(words),
+        'avg_pause_edited': mean_gap(edited),
+    }
 
 
 def evaluate(
@@ -86,7 +89,6 @@ def evaluate(
     keep_segments:     list,
     style_profile:     dict,
     processing_time_s: float,
-    active_filler_words: set = None,   # Bug 5 fix: language-specific filler set
 ) -> dict:
     """
     Computes a full quality report for a completed editing job.
@@ -113,8 +115,8 @@ def evaluate(
     # ══════════════════════════════════════════════════════════════════════
     # 1. FILE METADATA
     # ══════════════════════════════════════════════════════════════════════
-    input_meta  = _ffprobe_metadata(input_video_path)
-    output_meta = _ffprobe_metadata(output_video_path)
+    input_meta  = _file_metadata(input_video_path)
+    output_meta = _file_metadata(output_video_path)
 
     report['input_file']  = input_meta
     report['output_file'] = output_meta
@@ -153,25 +155,19 @@ def evaluate(
 
         total_pause_time   = decisions_df['duration'].sum()
         cut_pause_time     = cut_pauses['duration'].sum()     if not cut_pauses.empty     else 0.0
-        compress_pause_time= compress_pauses['duration'].sum() if not compress_pauses.empty else 0.0
 
-        # How much time COMPRESS actually saved (kept only 0.4s of each)
-        from render_engine import COMPRESS_TARGET_DURATION
-        compress_saved = max(0.0, compress_pause_time - (len(compress_pauses) * COMPRESS_TARGET_DURATION))
+        # How much time COMPRESS actually saved (each keeps the style's compress target)
+        keep_len = compress_target(style_profile)
+        compress_saved = float((compress_pauses['duration'] - keep_len).clip(lower=0).sum()) \
+            if not compress_pauses.empty else 0.0
 
-        avg_pause_original = decisions_df['duration'].mean() if total_pauses > 0 else 0.0
-
-        # Average pause duration in the output (KEEP pauses stay, COMPRESS trimmed)
-        kept_pause_time = (
-            keep_pauses['duration'].sum() +
-            len(compress_pauses) * COMPRESS_TARGET_DURATION
-        ) if not keep_pauses.empty or not compress_pauses.empty else 0.0
-        kept_pause_count = len(keep_pauses) + len(compress_pauses)
-        avg_pause_edited = (kept_pause_time / kept_pause_count) if kept_pause_count > 0 else 0.0
-
-        # Silence ratio: what fraction of original video was silence
-        silence_ratio_original = (total_pause_time / original_duration * 100) if original_duration > 0 else 0.0
-        silence_ratio_edited   = (kept_pause_time  / edited_duration   * 100) if edited_duration   > 0 else 0.0
+        # Silence and pause lengths measured from the words and the actual cut
+        # list, so leading/trailing silence counts and the edit can't look worse.
+        sil = _silence_stats(transcript_data, keep_segments, original_duration, edited_duration)
+        avg_pause_original = sil['avg_pause_original']
+        avg_pause_edited = sil['avg_pause_edited']
+        silence_ratio_original = sil['silence_ratio_original']
+        silence_ratio_edited = sil['silence_ratio_edited']
 
         report['pauses'] = {
             'total_detected':        total_pauses,
@@ -187,12 +183,14 @@ def evaluate(
             'silence_ratio_edited_pct':   round(silence_ratio_edited,   1),
         }
     else:
+        sil = _silence_stats(transcript_data, keep_segments, original_duration, edited_duration)
         report['pauses'] = {
             'total_detected': 0, 'cut': 0, 'compressed': 0, 'kept': 0,
-            'total_pause_time_s': 0, 'cut_pause_time_s': 0,
-            'compress_saved_s': 0, 'avg_pause_original_s': 0,
-            'avg_pause_edited_s': 0,
-            'silence_ratio_original_pct': 0, 'silence_ratio_edited_pct': 0,
+            'total_pause_time_s': 0, 'cut_pause_time_s': 0, 'compress_saved_s': 0,
+            'avg_pause_original_s': round(sil['avg_pause_original'], 3),
+            'avg_pause_edited_s': round(sil['avg_pause_edited'], 3),
+            'silence_ratio_original_pct': round(sil['silence_ratio_original'], 1),
+            'silence_ratio_edited_pct': round(sil['silence_ratio_edited'], 1),
         }
 
     # ══════════════════════════════════════════════════════════════════════
@@ -202,20 +200,11 @@ def evaluate(
     for seg in transcript_data.get('segments', []):
         all_words.extend(seg.get('words', []))
 
-    filler_word_count  = 0
-    filler_time_s      = 0.0
-    filler_word_counts = {}   # { 'um': 4, 'like': 2, ... }
-
-    # Bug 5 fix: use the language-specific filler set if provided,
-    # otherwise fall back to the default English set from filler_remover.py
-    fillers_to_check = active_filler_words if active_filler_words is not None else FILLER_WORDS
-
-    for w in all_words:
-        clean = w.get('word', '').strip().lower().strip('.,!?;:')
-        if clean in fillers_to_check:
-            filler_word_count += 1
-            filler_time_s     += w.get('end', 0) - w.get('start', 0)
-            filler_word_counts[clean] = filler_word_counts.get(clean, 0) + 1
+    found = find_fillers(transcript_data)   # the same rules, and the same language, that made the cuts
+    filler_word_count  = len(found)
+    filler_word_counts = {}   # { 'um': 4, 'i mean': 2, ... }
+    for f in found:
+        filler_word_counts[f['text']] = filler_word_counts.get(f['text'], 0) + 1
 
     # filler_cuts are already merged — count the regions
     filler_regions_removed = len(filler_cuts)
@@ -241,15 +230,6 @@ def evaluate(
 
     # Words per minute after editing (same words, shorter video)
     wpm_edited   = (total_words / (edited_duration / 60))   if edited_duration   > 0 else 0.0
-
-    # Transcription confidence: average Whisper word probability
-    confidences = [
-        w.get('probability', w.get('avg_logprob', 0))
-        for seg in transcript_data.get('segments', [])
-        for w in seg.get('words', [])
-        if 'probability' in w or 'avg_logprob' in w
-    ]
-    avg_confidence = sum(confidences) / len(confidences) if confidences else None
 
     # Segment-level average log probability (Whisper's confidence signal)
     seg_logprobs = [
@@ -383,6 +363,52 @@ def _logprob_to_quality(avg_logprob) -> str:
     return 'poor'
 
 
+def _weakest(qualities: list[str]) -> str:
+    known = [q for q in ('poor', 'fair', 'good', 'excellent') if q in qualities]
+    return known[0] if known else 'unknown'
+
+
+def aggregate(reports: list[dict], original_duration: float, edited_duration: float) -> dict:
+    """A combined video's report, from its clips' reports. Empty when none was evaluated."""
+    reports = [r for r in reports if r]
+
+    def values(section, key):
+        found = (r.get(section, {}).get(key) for r in reports)
+        return [v for v in found if v is not None]
+
+    def mean(numbers):
+        return round(sum(numbers) / len(numbers), 1) if numbers else None
+
+    scores = values('quality_score', 'overall')
+    if not scores:
+        return {}
+    score = mean(scores)
+    saved = sum(values('time_savings', 'time_saved_s'))
+    before = mean([v for v in values('speech', 'wpm_original') if v])     # a clip without speech has no pace
+    after = mean([v for v in values('speech', 'wpm_edited') if v])
+    return {
+        'quality_score': {'overall': score, 'grade': _score_to_grade(score)},
+        'time_savings': {
+            'time_saved_s':        round(saved, 2),
+            'time_saved_pct':      round(saved / original_duration * 100, 1) if original_duration > 0 else 0,
+            'original_duration_s': round(original_duration, 2),
+            'edited_duration_s':   round(edited_duration, 2),
+        },
+        'speech': {'wpm_original': before, 'wpm_edited': after,
+                   'wpm_increase_pct': round((after - before) / before * 100, 1) if before and after else None,
+                   'transcription_quality': _weakest(values('speech', 'transcription_quality'))},
+        'fillers': {'total_filler_words_detected': sum(values('fillers', 'total_filler_words_detected'))},
+        'pauses': {
+            'cut':                        sum(values('pauses', 'cut')),
+            'compressed':                 sum(values('pauses', 'compressed')),
+            'kept':                       sum(values('pauses', 'kept')),
+            'total_detected':             sum(values('pauses', 'total_detected')),
+            'silence_ratio_original_pct': mean(values('pauses', 'silence_ratio_original_pct')),
+            'silence_ratio_edited_pct':   mean(values('pauses', 'silence_ratio_edited_pct')),
+        },
+    }
+
+
 def _score_to_grade(score: float) -> str:
     if score >= 85: return 'A'
     if score >= 70: return 'B'
@@ -410,22 +436,22 @@ def _print_report(r: dict):
     pf = r['performance']
 
     print(f"\n{'─'*60}")
-    print(f"   📊 EVALUATION REPORT")
+    print("   📊 EVALUATION REPORT")
     print(f"{'─'*60}")
     print(f"   Overall Score:    {q['overall']}/100  (Grade {q['grade']})")
     print(f"{'─'*60}")
-    print(f"   ⏱  Time Savings")
+    print("   ⏱  Time Savings")
     print(f"      Original:  {_fmt_time(ts['original_duration_s'])}  →  "
           f"Edited: {_fmt_time(ts['edited_duration_s'])}")
     print(f"      Saved:     {_fmt_time(ts['time_saved_s'])}  ({ts['time_saved_pct']}%)")
     print(f"      File size: {ts['original_size_mb']}MB  →  {ts['output_size_mb']}MB  "
           f"({ts['size_reduction_pct']:.0f}% smaller)")
-    print(f"   ✂️  Pauses")
+    print("   ✂️  Pauses")
     print(f"      Detected:  {p['total_detected']}  "
           f"(CUT:{p['cut']}  COMPRESS:{p['compressed']}  KEEP:{p['kept']})")
     print(f"      Silence:   {p['silence_ratio_original_pct']}% → {p['silence_ratio_edited_pct']}% of video")
     print(f"      Avg pause: {p['avg_pause_original_s']}s → {p['avg_pause_edited_s']}s")
-    print(f"   🗑  Fillers")
+    print("   🗑  Fillers")
     print(f"      Removed:   {f['total_filler_words_detected']} words in "
           f"{f['filler_regions_removed']} region(s) "
           f"({f['filler_time_removed_s']}s)")
@@ -433,11 +459,11 @@ def _print_report(r: dict):
     if f['breakdown']:
         top = sorted(f['breakdown'].items(), key=lambda x: -x[1])[:4]
         print(f"      Top:       {', '.join(f'{w}×{c}' for w,c in top)}")
-    print(f"   🎙  Speech")
+    print("   🎙  Speech")
     print(f"      WPM:       {sp['wpm_original']} → {sp['wpm_edited']}  "
           f"(+{sp['wpm_increase_pct']}%)")
     print(f"      Quality:   {sp['transcription_quality']}")
-    print(f"   ⚡ Performance")
+    print("   ⚡ Performance")
     print(f"      Processed in {pf['processing_time_s']}s  "
           f"({pf['realtime_factor']}× realtime)")
     print(f"{'─'*60}\n")

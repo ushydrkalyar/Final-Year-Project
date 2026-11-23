@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
-from scenedetect import open_video, SceneManager, ContentDetector, AdaptiveDetector
-from scenedetect.detectors import HistogramDetector
+from scenedetect import open_video, SceneManager, ContentDetector
 
 
 # ---------------------------------------------------------------------------
@@ -116,7 +115,7 @@ def detect_scenes(video_path: str, threshold: float = 27.0) -> dict:
         print(f"   ✅ Visual pacing: {results['visual_pacing']} ({cpmin:.1f} cuts/min)")
 
         # ── Transition type analysis ──────────────────────────────────────
-        results['transition_types'] = _analyse_transitions(video_path, cut_times)
+        results['transition_types'] = _analyse_transitions(video_path, results['cut_times'])
 
         # ── Color profile extraction ──────────────────────────────────────
         results['color_profile'] = _extract_color_profile(video_path)
@@ -191,7 +190,6 @@ def _analyse_transitions(video_path: str, cut_times: list,
 
         peak_diff = max(diffs)
         avg_diff  = np.mean(diffs)
-        peak_idx  = diffs.index(peak_diff)
 
         # Check for fade (frames near black or white)
         mid_frame = samples[len(samples)//2]
@@ -286,8 +284,6 @@ def _extract_color_profile(video_path: str,
     avg_b = np.mean(b_vals)
 
     # Color temperature: warm = more red/yellow, cool = more blue
-    rg_ratio = avg_r / (avg_g + 1)
-    gb_ratio = avg_g / (avg_b + 1)
     if avg_r > avg_b * 1.15:
         color_temp = 'warm'
     elif avg_b > avg_r * 1.15:

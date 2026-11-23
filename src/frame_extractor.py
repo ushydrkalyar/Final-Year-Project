@@ -1,7 +1,6 @@
 import subprocess
 import os
 import base64
-import json
 
 
 # ---------------------------------------------------------------------------
@@ -129,17 +128,3 @@ def _cleanup_dir(path: str):
             os.rmdir(path)
     except OSError:
         pass
-
-
-def get_segment_thumbnail(frames: list, timestamp: float) -> dict | None:
-    """
-    Returns the thumbnail frame closest to a given timestamp.
-    Used by the frontend to show a preview frame when hovering a segment.
-
-    frames:    the list returned by extract_frames()
-    timestamp: seconds into the original video
-    """
-    if not frames:
-        return None
-    closest = min(frames, key=lambda f: abs(f['timestamp'] - timestamp))
-    return closest

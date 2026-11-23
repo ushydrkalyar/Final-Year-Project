@@ -2,6 +2,8 @@ import librosa
 import numpy as np
 import pandas as pd
 
+from speech_gaps import RATE, Loudness
+
 
 def extract_pause_features(transcription_data, audio_path, min_pause_duration=0.2):
     """
@@ -16,7 +18,7 @@ def extract_pause_features(transcription_data, audio_path, min_pause_duration=0.
         'start_time', 'end_time', 'duration',
         'rms_energy', 'is_sentence_boundary',
         'previous_word', 'next_word',
-        'speech_density'
+        'speech_density', 'sounds_like_speech'
     ]
 
     print("   Loading audio for signal analysis...")
@@ -35,6 +37,7 @@ def extract_pause_features(transcription_data, audio_path, min_pause_duration=0.
         return pd.DataFrame(columns=COLUMNS)
 
     pauses = []
+    loudness = Loudness(y, all_words)
 
     for i in range(len(all_words) - 1):
         current_word = all_words[i]
@@ -84,6 +87,7 @@ def extract_pause_features(transcription_data, audio_path, min_pause_duration=0.
             'previous_word':        word_text,
             'next_word':            next_word['word'].strip(),
             'speech_density':       round(float(speech_density), 3),
+            'sounds_like_speech':   loudness.sounds_like_speech(gap_start, gap_end),
         })
 
     if not pauses:
@@ -92,23 +96,6 @@ def extract_pause_features(transcription_data, audio_path, min_pause_duration=0.
 
     df = pd.DataFrame(pauses, columns=COLUMNS)
     return df
-
-
-if __name__ == "__main__":
-    from transcription_service import extract_audio, transcribe_audio
-
-    video_file = "test_video.mp4"
-    audio_file = "extracted_audio.wav"
-
-    if extract_audio(video_file, audio_file):
-        transcript = transcribe_audio(audio_file)
-        pause_data = extract_pause_features(transcript, audio_file)
-
-        if not pause_data.empty:
-            print("\nDetected Pauses:")
-            print(pause_data.to_string(index=False))
-        else:
-            print("\nNo pauses detected.")
 
 
 # ---------------------------------------------------------------------------
@@ -130,8 +117,6 @@ def detect_edge_silences(transcript_data: dict, audio_path: str,
     min_silence: minimum duration in seconds to bother cutting.
                  Silences shorter than this are left alone.
     """
-    import numpy as np
-
     all_words = []
     for segment in transcript_data.get('segments', []):
         all_words.extend(segment.get('words', []))
@@ -142,11 +127,14 @@ def detect_edge_silences(transcript_data: dict, audio_path: str,
     first_word_start = all_words[0].get('start', 0.0)
     last_word_end    = all_words[-1].get('end',   0.0)
 
+    samples, _ = librosa.load(audio_path, sr=RATE)
+    loudness = Loudness(samples, all_words)     # words Whisper skipped are not silence
+
     # Leading silence: time from 0 to first word
     leading_duration = first_word_start
 
     leading_cut_end = 0.0
-    if leading_duration >= min_silence:
+    if leading_duration >= min_silence and not loudness.sounds_like_speech(0.0, first_word_start):
         # Keep a tiny 0.1s buffer before the first word
         # so it doesn't feel abrupt
         leading_cut_end = max(0.0, first_word_start - 0.1)
@@ -173,7 +161,7 @@ def detect_edge_silences(transcript_data: dict, audio_path: str,
 
     if real_duration is not None:
         trailing_duration = real_duration - last_word_end
-        if trailing_duration >= min_silence:
+        if trailing_duration >= min_silence and not loudness.sounds_like_speech(last_word_end, real_duration):
             # Keep a tiny 0.1s buffer after the last word so the cut
             # doesn't feel abrupt, same as the leading-silence buffer.
             trailing_cut_start = min(real_duration, last_word_end + 0.1)

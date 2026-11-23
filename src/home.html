@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CutSmart — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0B0B;--side:#0E100F;--card:#111312;--card2:#171A18;--card3:#1E2220;--border:rgba(255,255,255,.08);
+--t1:#F4F6F5;--t2:#A3ABA7;--t3:#6B7370;--primary:#74F5B8;--primary-d:#5BDDA0;--on-primary:#06120C;--danger:#FF5A5F;
+--font:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);min-height:100vh;display:flex;-webkit-font-smoothing:antialiased}
+body:before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;mask-image:radial-gradient(ellipse at 60% 0,#000,transparent 70%)}
+button{font-family:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+/* sidebar */
+.side{width:240px;flex:0 0 240px;background:var(--side);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:5}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;padding:4px 8px 22px}
+.logo-icon{width:32px;height:32px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(116,245,184,.3)}
+.logo-icon svg{width:20px;height:20px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--t2);font-size:14.5px;font-weight:500;margin-bottom:3px;transition:.15s}
+.nav a svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav a:hover{background:var(--card2);color:var(--t1)}
+.nav a.on{background:rgba(116,245,184,.12);color:var(--primary)}
+.grow{flex:1}
+.bar{height:6px;border-radius:9px;background:var(--card3);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--primary);border-radius:9px;transition:width .4s}
+/* main */
+.main{flex:1;min-width:0;position:relative}
+.top{display:flex;align-items:center;gap:14px;padding:18px 32px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(11,11,11,.85);backdrop-filter:blur(12px);z-index:4}
+.search{flex:1;max-width:520px;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:0 16px;height:42px}
+.search svg{width:16px;height:16px;stroke:var(--t3);fill:none;stroke-width:2}
+.search input{flex:1;background:none;border:0;outline:0;color:var(--t1);font:inherit;font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid var(--border);background:var(--card);color:var(--t1);transition:.15s}
+.pill:hover{border-color:var(--primary);color:var(--primary)}
+.pill.mint{background:var(--primary);color:var(--on-primary);border-color:transparent;box-shadow:0 0 26px rgba(116,245,184,.35)}
+.pill.mint:hover{background:var(--primary-d);color:var(--on-primary)}
+.avatar{width:40px;height:40px;border-radius:50%;background:#4b8;color:#06120c;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:0;position:relative}
+.menu{position:absolute;right:32px;top:66px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:8px;min-width:210px;display:none;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.menu.show{display:block}
+.menu .who{padding:10px 12px;font-size:13px;color:var(--t2);border-bottom:1px solid var(--border);margin-bottom:6px}
+.menu .who b{display:block;color:var(--t1);font-size:14px}
+.menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:9px;background:none;border:0;color:var(--t1);font-size:14px}
+.menu a:hover,.menu button:hover{background:var(--card3)}
+.wrap{padding:32px;max-width:1180px;margin:0 auto}
+h1{font-size:28px;font-weight:700;letter-spacing:-.02em}
+h1 em{font-style:normal;color:#5FA98A}
+.sub{color:var(--t2);margin-top:6px;font-size:14.5px}
+/* dropzone */
+.drop{margin-top:24px;border:1.5px dashed rgba(116,245,184,.35);border-radius:24px;background:linear-gradient(180deg,rgba(116,245,184,.05),rgba(116,245,184,.01));padding:54px 20px;text-align:center;transition:.2s;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--primary);background:rgba(116,245,184,.08);box-shadow:0 0 60px rgba(116,245,184,.1)}
+.drop .ico{width:62px;height:62px;border-radius:18px;background:rgba(116,245,184,.12);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.drop .ico svg{width:28px;height:28px;stroke:var(--primary);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.drop h3{font-size:20px;font-weight:600}
+.drop p{color:var(--t2);font-size:13.5px;margin-top:8px}
+.drop .pill{margin-top:20px}
+.langrow{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:16px;font-size:13px;color:var(--t2)}
+.langrow select{background:var(--card3);color:var(--t1);border:1px solid var(--border);border-radius:99px;padding:7px 14px;font:inherit;font-size:13px;outline:0}
+/* recent */
+.sect{display:flex;align-items:center;justify-content:space-between;margin:40px 0 16px}
+.sect h2{font-size:19px;font-weight:600}
+.sect button{background:none;border:0;color:var(--t3);font-size:13px}
+.sect button:hover{color:var(--danger)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.vc{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;transition:.18s;position:relative}
+.vc:hover{border-color:rgba(116,245,184,.45);transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.th{aspect-ratio:16/10;background:#0a0c0b center 25%/cover no-repeat;position:relative;display:flex;align-items:center;justify-content:center}
+.th svg{width:34px;height:34px;stroke:var(--t3);fill:none;stroke-width:1.5}
+.dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.72);font-size:11.5px;padding:3px 8px;border-radius:7px}
+.st{position:absolute;left:8px;top:8px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:rgba(116,245,184,.9);color:var(--on-primary)}
+.st.proc{background:#F5C451}.st.err{background:var(--danger);color:#fff}.st.draft{background:rgba(255,255,255,.14);color:var(--t1)}
+.vi{padding:12px 14px 14px}
+.vi b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vi span{font-size:12px;color:var(--t3)}
+.x{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:0;font-size:14px;opacity:0;transition:.15s}
+.vc:hover .x{opacity:1}
+.empty{grid-column:1/-1;text-align:center;padding:44px 20px;background:var(--card);border:1px dashed var(--border);border-radius:18px;color:var(--t2);font-size:14px}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:8px}
+.tip{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px}
+.tip b{display:block;margin-bottom:6px;font-size:14.5px}
+.tip p{color:var(--t2);font-size:13px;line-height:1.55}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:50}
+.ov.show{display:flex}
+.modal{width:min(440px,92vw);background:var(--card);border:1px solid var(--border);border-radius:24px;padding:30px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.modal h3{font-size:20px;margin-bottom:6px}
+.modal .fn{font-size:13px;color:var(--t2);margin-bottom:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal .bar{height:10px;margin:14px 0 8px}
+.modal .pct{font-size:13px;color:var(--t2)}
+.didyou{margin-top:22px;background:var(--card2);border-radius:14px;padding:14px;font-size:13px;color:var(--t2);text-align:left;line-height:1.5}
+.didyou b{color:var(--primary)}
+.spin{width:44px;height:44px;border-radius:50%;border:3px solid var(--card3);border-top-color:var(--primary);margin:0 auto 18px;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:820px){.side{display:none}.wrap{padding:20px}.top{padding:14px 20px}}
+</style>
+<style id="authGate">body{visibility:hidden}</style>
+</head>
+<body>
+<aside class="side">
+  <div class="logo"><div class="logo-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="9.5" width="3" height="5" rx="1.5" fill="#0A0A0B"/><rect x="7" y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B"/><rect x="14" y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B"/><rect x="19" y="9.5" width="3" height="5" rx="1.5" fill="#0A0A0B"/></svg></div>CutSmart</div>
+  <nav class="nav">
+    <a class="on" href="/home.html"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>Home</a>
+    <a href="/studio.html"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>Editor</a>
+    <a href="#recent"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Recent Videos</a>
+    <a href="/profile.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Profile</a>
+  </nav>
+  <div class="grow"></div>
+</aside>
+
+<div class="main">
+  <div class="top">
+    <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="q" placeholder="Search your videos…" oninput="render()"></div>
+    <div style="flex:1"></div>
+    <button class="pill mint" onclick="pick()">+ New video</button>
+    <button class="avatar" id="av" onclick="document.getElementById('menu').classList.toggle('show')">…</button>
+  </div>
+  <div class="menu" id="menu">
+    <div class="who"><b id="uName">—</b><span id="uMail"></span></div>
+    <a href="/profile.html">My profile</a>
+    <button onclick="logout()">Log out</button>
+  </div>
+
+  <div class="wrap">
+    <h1><span id="greet">Welcome</span>, <em id="hi">creator</em></h1>
+    <p class="sub">Drop a video and CutSmart will cut the silence, add captions and polish it for you.</p>
+
+    <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose a video to upload" onclick="pick()">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg></div>
+      <h3>Drag &amp; drop your video here</h3>
+      <p>MP4, MOV, MKV or WebM · your clip stays private to your account</p>
+      <button class="pill mint" onclick="event.stopPropagation();pick()">Choose a video</button>
+      <div class="langrow" onclick="event.stopPropagation()">Spoken language
+        <select id="lang" aria-label="Spoken language"></select>
+      </div>
+      <input type="file" id="file" accept="video/*" multiple hidden>
+    </div>
+
+    <div class="sect" id="recent"><h2>Recent Videos</h2><button onclick="clearAll()">Clear list</button></div>
+    <div class="grid" id="grid"></div>
+
+    <div class="sect" id="learn"><h2>Get the most out of CutSmart</h2></div>
+    <div class="tips">
+      <div class="tip"><b>1 · Upload</b><p>Drop any talking-head, podcast or vlog clip. Long silences and filler words are found automatically.</p></div>
+      <div class="tip"><b>2 · Pick a caption style</b><p>In Studio open <b>Templates</b> and pick a look: bubble, impact, cinema and more.</p></div>
+      <div class="tip"><b>3 · Review &amp; export</b><p>Open <b>Pacing</b> to see everything that was removed and put back anything you want, then export.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov"><div class="modal">
+  <div class="spin"></div>
+  <h3 id="mTitle">Preparing your video…</h3>
+  <div class="fn" id="mFile"></div>
+  <div class="bar"><i id="mBar" style="width:0"></i></div>
+  <div class="pct" id="mPct">0%</div>
+  <div class="didyou"><b>Did you know?</b> CutSmart removes filler words and dead air, so a 10-minute take often ends up 20–30% shorter.</div>
+</div></div>
+
+<script src="/assets/a11y.js?v=20261123b"></script>
+<script src="/assets/projects.js?v=20261123b"></script>
+<script src="/assets/languages.js?v=20261123b"></script>
+  <script src="/assets/ui.js?v=20261123b"></script>
+  <script src="/assets/session.js?v=20261123b"></script>
+  <script src="/assets/api.js?v=20261123b"></script>
+<script>
+document.getElementById('lang').innerHTML=CUTSMART_LANGUAGES.map(([v,n])=>`<option value="${v}"${v==='en'?' selected':''}>${n}</option>`).join('');
+let USER=null, PROJ=null;
+(async()=>{USER=await requireUser();
+ const a=document.getElementById('av');a.textContent=USER.initials;a.style.background=USER.avatar_color||'#4b8';
+ document.getElementById('uName').textContent=USER.name;document.getElementById('uMail').textContent=USER.email||'';
+ document.getElementById('hi').textContent=(USER.name||'creator').split(' ')[0];
+ PROJ=CutSmartProjects.forUser(USER.id);render();syncLive().then(render);
+ if(PROJ.list().length)document.getElementById('greet').textContent='Welcome back';
+})();
+const load=()=>PROJ?PROJ.list():[];
+const fmt=s=>{s=Math.round(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+
+async function syncLive(){ // refresh statuses of in-memory server jobs
+  let jobs;
+  try{jobs=await apiJson('/jobs/')}catch(_){return}
+  for(const p of load()){
+    const s=jobs[p.jobId];
+    if(!s){if(p.status==='processing')PROJ.update(p.id,{status:'draft',jobId:null});continue} // lost in a restart
+    const status=s.status==='done'?'done':s.status==='error'?'error':'processing';
+    if(p.status!==status)PROJ.update(p.id,{status})}
+}
+function render(){
+  const q=document.getElementById('q').value.toLowerCase(), l=load().filter(p=>p.name.toLowerCase().includes(q));
+  const g=document.getElementById('grid');
+  if(!l.length){g.innerHTML='<div class="empty">No videos yet — drop your first clip above to get started.</div>'}
+  else g.innerHTML=l.map(p=>{const img=safeImg(PROJ.thumb(p.id)),c=p.status==='done'?['','Completed']:p.status==='error'?['err','Failed']:p.status==='processing'?['proc','Processing']:['draft','Draft'];
+    return `<div class="vc" role="button" tabindex="0" aria-label="Open ${esc(p.name)}" onclick="location.href='/studio.html?p=${safeId(p.id)}'"><div class="th" style="${img?`background-image:url(${img})`:''}">${img?'':'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>'}<span class="st ${c[0]}">${c[1]}</span><span class="dur">${fmt(p.status==='done'&&p.editedDur?p.editedDur:p.dur)}</span><button class="x" onclick="event.stopPropagation();del('${safeId(p.id)}')">✕</button></div><div class="vi"><b>${esc(p.name)}</b><span>${new Date(p.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'})} · ${esc(p.lang==='auto'?'Auto-detect':p.lang.toUpperCase())}</span></div></div>`}).join('');
+}
+async function del(id){await PROJ.remove(id);render()}
+async function clearAll(){if(load().length&&confirm('Remove all videos from this list? (Your files are not deleted from your computer.)')){await PROJ.clear();render()}}
+
+// ---- upload flow ----
+const MAX_CLIPS=10; // the server refuses more
+function pick(){document.getElementById('file').click()}
+document.getElementById('file').onchange=e=>{if(e.target.files.length)start([...e.target.files]);e.target.value=''};
+const dz=document.getElementById('drop');
+['dragenter','dragover'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add('over')}));
+['dragleave','drop'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove('over')}));
+dz.addEventListener('drop',e=>{const f=[...e.dataTransfer.files].filter(x=>x.type.startsWith('video/'));if(f.length)start(f)});
+
+async function start(files){
+  files=files.filter(f=>f.type.startsWith('video/')||/\.(mp4|mov|mkv|webm|avi)$/i.test(f.name));if(!files.length)return;
+  if(!PROJ)return; // the session check is still running
+  if(files.length>MAX_CLIPS)return alert(`Choose up to ${MAX_CLIPS} clips at a time.`);
+  try{CutSmartProjects.checkSizes(files)}catch(e){return alert(e.message)}
+  const ov=document.getElementById('ov');ov.classList.add('show');
+  document.getElementById('mFile').textContent=files.length>1?files.length+' clips':files[0].name;
+  const set=p=>{const n=Math.round(p*100);document.getElementById('mBar').style.width=n+'%';document.getElementById('mPct').textContent=n+'%';document.getElementById('mTitle').textContent=p<1?'Preparing your video… '+n+'%':'Opening editor…'};
+  try{
+    const m=await CutSmartProjects.videoMeta(files[0]);
+    const lang=document.getElementById('lang').value;
+    const id=await PROJ.create(files,{name:files.length>1?files[0].name+' +'+(files.length-1):files[0].name,dur:m.dur,thumb:m.thumb,lang},set);
+    location.href='/studio.html?p='+id;
+  }catch(e){ov.classList.remove('show');alert('Could not prepare the video: '+e.message)}
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#menu,#av'))document.getElementById('menu').classList.remove('show')});
+
+</script>
+</body>
+</html>

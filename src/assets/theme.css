@@ -1,0 +1,26 @@
+/* The CutSmart theme shared by the account pages. Linked after the page's own styles, which it refines. */
+/* ===== Higgsfield-inspired theme: near-black, dot grid, neon lime accent ===== */
+:root{--on-primary:#0A0A0B;--display:'DM Sans','Inter',system-ui,sans-serif;--radius:10px;--radius-lg:16px}
+body{background-image:radial-gradient(rgba(255,255,255,.055) 1px,transparent 1px);background-size:22px 22px;background-color:var(--bg)}
+h1,h2{font-family:var(--display)}
+h1,h2{text-transform:uppercase;font-stretch:112%;font-weight:800;letter-spacing:-.01em}
+h1 em{color:var(--primary);font-style:normal}
+.topbar{background:rgba(10,10,11,.82)!important;backdrop-filter:blur(12px)}
+.logo-icon{box-shadow:0 0 22px rgba(116,245,184,.28)}
+.logo-icon svg{stroke:var(--on-primary)!important}
+.submit,button.primary{border-radius:999px!important;box-shadow:0 3px 0 rgba(52,150,105,.9),0 10px 30px -8px rgba(116,245,184,.35);font-weight:700}
+.submit:hover{transform:translateY(-1px);filter:brightness(1.05)}
+input:focus,select:focus,textarea:focus{border-color:var(--primary)!important;box-shadow:0 0 0 3px var(--primary-g)!important}
+.avatar{color:var(--on-primary)}
+::selection{background:var(--primary);color:var(--on-primary)}
+.banner:empty{display:none!important}
+
+/* ===== Mint-on-black theme (inspired by modern caption tools): calm dark, mint CTA, muted-green accents ===== */
+:root{--accent-soft:#5FA98A;--radius:12px;--radius-lg:20px}
+body{background-image:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(116,245,184,.10),transparent 70%),linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:auto,48px 48px,48px 48px;background-attachment:fixed}
+h1,h2{text-transform:none!important;font-stretch:normal!important;font-weight:600!important;letter-spacing:-.02em!important;font-family:var(--display)}
+h1 em{color:var(--accent-soft)!important}
+.submit,button.primary{box-shadow:0 0 22px rgba(116,245,184,.35)!important;font-weight:600}
+.logo-icon{box-shadow:0 0 24px rgba(116,245,184,.3)}
+.divider span{color:var(--t3)}
+.card{border-radius:var(--radius-lg)}

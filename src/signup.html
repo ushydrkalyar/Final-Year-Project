@@ -9,342 +9,46 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="/assets/auth.css?v=20261123" />
   <style>
-    :root {
-      --bg: #0F1117;
-      --card: #1A1D29;
-      --card2: #22263A;
-      --card3: #2A2F45;
-      --border: rgba(255, 255, 255, .07);
-      --border2: rgba(255, 255, 255, .13);
-      --primary: #6366F1;
-      --primary-d: #4F46E5;
-      --primary-g: rgba(99, 102, 241, .14);
-      --success: #22C55E;
-      --success-g: rgba(34, 197, 94, .12);
-      --danger: #EF4444;
-      --danger-g: rgba(239, 68, 68, .12);
-      --t1: #FFFFFF;
-      --t2: #94A3B8;
-      --t3: #475569;
-      --radius: 8px;
-      --radius-lg: 12px;
-      --tr: .16s cubic-bezier(.4, 0, .2, 1);
-      --font: 'Inter', system-ui, sans-serif;
-      --mono: 'JetBrains Mono', monospace;
-    }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0
-    }
-
-    html {
-      font-size: 15px
-    }
-
     body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--t1);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, .10), transparent 45%)
+      background-image: radial-gradient(circle at 50% 0%, rgba(116, 245, 184, .10), transparent 45%);
     }
-
-    button {
-      font-family: var(--font);
-      cursor: pointer;
-      border: none
-    }
-
-    input {
-      font-family: var(--font);
-      outline: none
-    }
-
-    .topbar {
-      width: 100%;
-      max-width: 1180px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      padding: 0 32px
-    }
-
     .logo {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      font-weight: 700;
-      font-size: 15px;
       letter-spacing: -.01em;
-      text-decoration: none;
-      color: var(--t1)
     }
-
-    .logo-icon {
-      width: 30px;
-      height: 30px;
-      background: var(--primary);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center
-    }
-
     .logo-icon svg {
       width: 16px;
       height: 16px;
       stroke: #fff;
       stroke-width: 2.4;
       fill: none;
-      stroke-linecap: round
+      stroke-linecap: round;
     }
-
-    .wrap {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 20px
-    }
-
     .card {
       width: 400px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      box-shadow: 0 30px 80px -25px rgba(0, 0, 0, .55)
     }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: -.01em;
-      margin-bottom: 6px
-    }
-
-    .sub {
-      font-size: 13px;
-      color: var(--t2);
-      margin-bottom: 26px
-    }
-
-    label {
-      display: block;
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--t2);
-      margin-bottom: 6px;
-      letter-spacing: .01em
-    }
-
-    .field {
-      margin-bottom: 16px
-    }
-
-    input[type=email],
-    input[type=password],
-    input[type=text] {
-      width: 100%;
-      background: var(--card3);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--t1);
-      font-size: 13.5px;
-      padding: 10px 12px;
-      transition: var(--tr)
-    }
-
-    input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-g)
-    }
-
     input.err {
-      border-color: var(--danger)
+      border-color: var(--danger);
     }
-
-    .hint {
-      font-size: 11px;
-      color: var(--t3);
-      margin-top: 5px
-    }
-
-    .hint.bad {
-      color: #FCA5A5
-    }
-
-    .hint.good {
-      color: var(--success)
-    }
-
-    .submit {
-      width: 100%;
-      padding: 11px;
-      border-radius: var(--radius);
-      background: var(--primary);
-      color: #fff;
-      font-size: 13.5px;
-      font-weight: 700;
-      transition: var(--tr);
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px
-    }
-
-    .submit:hover:not(:disabled) {
-      background: var(--primary-d);
-      box-shadow: 0 0 20px rgba(99, 102, 241, .3)
-    }
-
-    .submit:disabled {
-      opacity: .6;
-      cursor: not-allowed
-    }
-
-    .spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255, 255, 255, .4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      display: none
-    }
-
-    .submit.loading .spinner {
-      display: inline-block
-    }
-
-    .submit.loading .btn-text {
-      display: none
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    .banner {
-      font-size: 12.5px;
-      padding: 10px 12px;
-      border-radius: var(--radius);
-      margin-bottom: 16px;
-      display: none;
-      align-items: center;
-      gap: 8px
-    }
-
-    .banner.error {
-      background: var(--danger-g);
-      color: #FCA5A5;
-      display: flex
-    }
-
-    /* Divider */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 20px 0
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border2)
-    }
-
-    .divider span {
-      font-size: 11.5px;
-      color: var(--t3);
-      white-space: nowrap
-    }
-
-    /* Google button */
-    .google-btn {
-      width: 100%;
-      padding: 10px;
-      border-radius: var(--radius);
-      background: var(--card2);
-      color: var(--t1);
-      font-size: 13.5px;
-      font-weight: 600;
-      border: 1px solid var(--border2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: var(--tr);
-      cursor: pointer;
-      text-decoration: none
-    }
-
-    .google-btn:hover {
-      background: var(--card3);
-      border-color: rgba(255, 255, 255, .22)
-    }
-
-    .google-icon {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0
-    }
-
-    .foot {
-      margin-top: 22px;
-      text-align: center;
-      font-size: 12.5px;
-      color: var(--t2)
-    }
-
-    .foot a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600
-    }
-
-    .foot a:hover {
-      text-decoration: underline
-    }
-
-    /* OTP step */
     #otpStep {
-      display: none
+      display: none;
     }
-
     .otp-info {
       font-size: 13px;
       color: var(--t2);
       margin-bottom: 20px;
-      line-height: 1.6
+      line-height: 1.6;
     }
-
     .otp-info strong {
-      color: var(--t1)
+      color: var(--t1);
     }
-
     .otp-inputs {
       display: flex;
       gap: 10px;
       justify-content: center;
-      margin-bottom: 20px
+      margin-bottom: 20px;
     }
-
     .otp-inputs input {
       width: 46px;
       height: 52px;
@@ -356,21 +60,18 @@
       border: 1px solid var(--border2);
       border-radius: var(--radius);
       color: var(--t1);
-      caret-color: var(--primary)
+      caret-color: var(--primary);
     }
-
     .otp-inputs input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-g)
+      box-shadow: 0 0 0 3px var(--primary-g);
     }
-
     .resend-row {
       text-align: center;
       margin-top: 14px;
       font-size: 12.5px;
-      color: var(--t2)
+      color: var(--t2);
     }
-
     .resend-row button {
       background: none;
       color: var(--primary);
@@ -378,14 +79,15 @@
       font-size: 12.5px;
       padding: 0;
       border: none;
-      cursor: pointer
+      cursor: pointer;
     }
-
     .resend-row button:disabled {
       color: var(--t3);
-      cursor: not-allowed
+      cursor: not-allowed;
     }
   </style>
+  <link rel="stylesheet" href="/assets/theme.css?v=20261123" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -393,11 +95,11 @@
   <header class="topbar">
     <a class="logo" href="/welcome.html">
       <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none">
-          <rect x="2" y="9.5" width="3" height="5" rx="1.5" fill="white" />
-          <rect x="7" y="5.5" width="3" height="13" rx="1.5" fill="white" />
-          <rect x="14" y="5.5" width="3" height="13" rx="1.5" fill="white" />
-          <rect x="19" y="9.5" width="3" height="5" rx="1.5" fill="white" />
-          <line x1="12" y1="6" x2="12" y2="18" stroke="white" stroke-width="1.5" stroke-linecap="round"
+          <rect x="2" y="9.5" width="3" height="5" rx="1.5" fill="#0A0A0B" />
+          <rect x="7" y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B" />
+          <rect x="14" y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B" />
+          <rect x="19" y="9.5" width="3" height="5" rx="1.5" fill="#0A0A0B" />
+          <line x1="12" y1="6" x2="12" y2="18" stroke="#0A0A0B" stroke-width="1.5" stroke-linecap="round"
             stroke-dasharray="1.5 2.3" opacity=".85" />
         </svg></div>
       CutSmart
@@ -485,29 +187,16 @@
     </div>
   </div>
 
+  <script src="/assets/ui.js?v=20261123"></script>
+  <script src="/assets/session.js?v=20261123"></script>
+  <script src="/assets/api.js?v=20261123"></script>
+  <script src="/assets/password.js?v=20261123"></script>
   <script>
-    const API = window.location.origin;
     let pendingEmail = '';
     let countdownInterval = null;
 
-    // Redirect if already logged in
-    (async () => {
-      try {
-        const r = await fetch(`${API}/auth/me`, { credentials: 'include' });
-        if (r.ok) window.location.href = '/editor.html';
-      } catch (_) { }
-    })();
-
-    // Live password strength hint
-    const pwInput = document.getElementById('password');
-    const pwHint = document.getElementById('pwHint');
-    pwInput.addEventListener('input', () => {
-      const v = pwInput.value;
-      const ok = v.length >= 8 && /[A-Za-z]/.test(v) && /[0-9]/.test(v);
-      if (!v) { pwHint.textContent = 'At least 8 characters, with letters and numbers'; pwHint.className = 'hint'; }
-      else if (ok) { pwHint.textContent = 'Looks good'; pwHint.className = 'hint good'; }
-      else { pwHint.textContent = 'At least 8 characters, with letters and numbers'; pwHint.className = 'hint bad'; }
-    });
+    leaveIfSignedIn();
+    bindPasswordHint(document.getElementById('password'), document.getElementById('pwHint'));
 
     // Signup submit
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
@@ -520,41 +209,18 @@
 
       if (name.length < 2) { showSignupError('Enter your name.'); return; }
       if (!email) { showSignupError('Enter your email.'); return; }
-      if (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-        showSignupError('Password must be at least 8 characters and include letters and numbers.'); return;
-      }
+      const problem = passwordProblem(password);
+      if (problem) { showSignupError(problem); return; }
 
       const btn = document.getElementById('submitBtn');
       btn.disabled = true; btn.classList.add('loading');
 
       try {
-        const r = await fetch(`${API}/auth/signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ name, email, password }),
-        });
-        const data = await r.json();
-
-        if (!r.ok) {
-          const msg = Array.isArray(data.detail)
-            ? data.detail.map(d => d.msg).join(' ')
-            : (data.detail || 'Could not create account. Please try again.');
-          showSignupError(msg);
-          btn.disabled = false; btn.classList.remove('loading');
-          return;
-        }
-
-        // Show OTP step
-        pendingEmail = email;
-        document.getElementById('signupStep').style.display = 'none';
-        document.getElementById('otpStep').style.display = 'block';
-        document.getElementById('otpEmail').textContent = email;
-        document.getElementById('d0').focus();
+        await api('/auth/signup', { json: { name, email, password }, redirect: false, fallback: 'Could not create account. Please try again.' });
+        showOtpStep(email);
         startResendCountdown(60);
-
-      } catch {
-        showSignupError('Could not reach the server. Is it running?');
+      } catch (err) {
+        showSignupError(err.message);
         btn.disabled = false; btn.classList.remove('loading');
       }
     });
@@ -589,9 +255,13 @@
       });
     });
 
+    let lastTriedOtp = '';
     function checkOtpReady() {
       const full = digits.every(id => document.getElementById(id).value.length === 1);
-      document.getElementById('verifyBtn').disabled = !full;
+      const btn = document.getElementById('verifyBtn');
+      btn.disabled = !full;
+      // Submit as soon as the 6th digit lands; once per distinct code, so a wrong code doesn't loop
+      if (full && getOtpValue() !== lastTriedOtp) { lastTriedOtp = getOtpValue(); btn.click(); }
     }
 
     function getOtpValue() {
@@ -606,28 +276,15 @@
       document.getElementById('otpErrBanner').style.display = 'none';
 
       try {
-        const r = await fetch(`${API}/auth/verify-email`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email: pendingEmail, otp }),
-        });
-        const data = await r.json();
-
-        if (!r.ok) {
-          showOtpError(data.detail || 'Invalid code. Please check and try again.');
-          // Shake & clear inputs
-          digits.forEach(id => { document.getElementById(id).value = ''; });
-          document.getElementById('d0').focus();
-          btn.disabled = true; btn.classList.remove('loading');
-          return;
-        }
-
-        window.location.href = '/splash.html?next=/editor.html';
-
-      } catch {
-        showOtpError('Could not reach the server.');
-        btn.disabled = false; btn.classList.remove('loading');
+        await api('/auth/verify-email', { json: { email: pendingEmail, otp }, redirect: false, fallback: 'Invalid code. Please check and try again.' });
+        const next = safeNext(new URLSearchParams(location.search).get('next'));
+        window.location.href = `/splash.html?next=${encodeURIComponent(next)}`;
+      } catch (err) {
+        showOtpError(err.message);
+        btn.classList.remove('loading');
+        if (!err.status) { btn.disabled = false; return; } // nobody answered: keep what was typed
+        digits.forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('d0').focus();
       }
     });
 
@@ -637,16 +294,17 @@
       document.getElementById('otpErrBanner').style.display = 'none';
 
       try {
-        await fetch(`${API}/auth/resend-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: pendingEmail }),
-        });
-        startResendCountdown(60);
-      } catch {
-        showOtpError('Could not resend code. Try again.');
+        await resendCode(pendingEmail);
+        return startResendCountdown(60);
+      } catch (err) {
+        showOtpError(err.message);
       }
+      document.getElementById('resendBtn').disabled = false;
     });
+
+    function resendCode(email) {
+      return api('/auth/resend-otp', { json: { email }, redirect: false, fallback: 'Could not send a code. Try again.' });
+    }
 
     function startResendCountdown(seconds) {
       clearInterval(countdownInterval);
@@ -666,6 +324,30 @@
         }
       }, 1000);
     }
+
+    function showOtpStep(email) {
+      pendingEmail = email;
+      document.getElementById('signupStep').style.display = 'none';
+      document.getElementById('otpStep').style.display = 'block';
+      document.getElementById('otpEmail').textContent = email;
+      document.getElementById('d0').focus();
+    }
+
+    // Sent here by login for an account that has not been verified yet
+    (async () => {
+      const email = new URLSearchParams(location.search).get('verify');
+      if (!email) return;
+      showOtpStep(email);
+      try {
+        await resendCode(email);
+        startResendCountdown(60);
+      } catch (err) {
+        // 429: a code went out less than a minute ago and is still the valid one
+        if (err.status === 429) return startResendCountdown(60);
+        showOtpError(err.message);
+        document.getElementById('resendBtn').disabled = false;
+      }
+    })();
 
     function showSignupError(msg) {
       const b = document.getElementById('errBanner');

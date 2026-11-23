@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+
+# Generated render artifacts — videos, audio and caption files are all
+# produced fresh by the pipeline on every run (raw uploads, _intermediate_*
+# working copies, edited_*/subtitles_remapped_* results). None of this is
+# source, which is exactly why 2GB+ of it had piled up directly alongside
+# the code with nothing to stop it being committed by accident.
+*.mp4
+*.MP4
+*.mov
+*.wav
+*.ass
+*.srt
+!locked_templates/*.golden.ass
+
+# Local environment
+.env
+.DS_Store
+
+# User data from before templates moved to Postgres
+custom_templates.json*

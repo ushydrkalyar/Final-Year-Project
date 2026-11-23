@@ -1,0 +1,1 @@
+soft_reveal:{font:'Manrope',face:'Bold',italic:false,emItalic:true,size:40,color:'#FFFFFF',wpc:5,lines:1,em:true,emFont:'Instrument Serif',emColor:'#FFFFFF',emScale:1.7,glow:false,emEvery:1,y:63}

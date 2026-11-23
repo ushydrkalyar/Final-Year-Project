@@ -1,8 +1,11 @@
 import subprocess
-import os
 import sys
 import threading
+
+import librosa
 import whisper
+
+import speech_gaps
 
 # Windows consoles often default to a legacy code page such as cp1252. The
 # application logs Unicode status symbols, so use UTF-8 before the first log.
@@ -44,32 +47,6 @@ SUPPORTED_LANGUAGES = {
     'fa':    'persian',
 }
 
-# Language-specific filler words.
-# Used by filler_remover.py when language is specified.
-FILLER_WORDS_BY_LANGUAGE = {
-    'en': {
-        'um','uh','umm','uhh','hmm','hm','er','err','ah','ahh',
-        'like','basically','literally','actually','honestly',
-        'right','okay','ok','so','well','anyway','anyways',
-        'you know','i mean','kind of','sort of','i guess',
-    },
-    'ur': {
-        'matlab','yani','acha','han','haan','toh','phir',
-        'woh','bas','agar','lekin','aur','bhi','hi',
-        'na','nah','hmm','uh','um',
-    },
-    'ar': {
-        'يعني','اممم','اهه','طيب','حسنا','اوكي','صح',
-        'يلا','هممم','اه','اوه','عم','مم',
-    },
-    'hi': {
-        'matlab','yani','acha','han','haan','toh','phir',
-        'woh','bas','lekin','aur','bhi','hi','na','hmm',
-        'um','uh','theek','sahi',
-    },
-}
-
-
 def extract_audio(video_path, output_audio_path):
     """Extracts audio from a video file using FFmpeg."""
     print(f"Extracting audio from '{video_path}'...")
@@ -94,6 +71,69 @@ def extract_audio(video_path, output_audio_path):
         return False
 
 
+# Not fed its own last sentence, Whisper gets stuck repeating (and skipping) far less
+_OPTIONS = dict(word_timestamps=True, condition_on_previous_text=False, fp16=False)
+_PAD_S = 0.2                # heard either side of a skipped stretch
+_UNSURE_NO_SPEECH = 0.6     # a re-read segment like this is noise or music read as words
+_UNSURE_LOGPROB = -1.0
+_REREADS = 3                # one re-read can itself stop part-way
+
+
+def _reread_skipped(audio_path, result, language):
+    """Transcribe again, on its own, any stretch that sounds like speech but got no words."""
+    def spoken():
+        return [word for segment in result.get('segments', []) for word in segment.get('words', [])]
+    if not spoken():
+        return
+    samples, rate = librosa.load(audio_path, sr=speech_gaps.RATE)
+    tried = set()
+    for _ in range(_REREADS):
+        gaps = [gap for gap in speech_gaps.skipped(samples, spoken()) if gap not in tried]
+        if not gaps:
+            return
+        tried.update(gaps)
+        for start, end in gaps:
+            offset = max(0.0, start - _PAD_S)
+            part = samples[int(offset * rate):int((end + _PAD_S) * rate)]
+            heard = _WHISPER_MODEL.transcribe(part, language=language, **_OPTIONS)
+            for segment in heard.get('segments', []):
+                if (segment.get('no_speech_prob', 0) > _UNSURE_NO_SPEECH
+                        or segment.get('avg_logprob', 0) < _UNSURE_LOGPROB):
+                    continue
+                words = []
+                for word in segment.get('words', []):
+                    first, last = word['start'] + offset, word['end'] + offset
+                    if start <= (first + last) / 2 <= end:
+                        first, last = max(start, first), min(end, last)
+                        if last > first:
+                            words.append({**word, 'start': first, 'end': last})
+                if words:
+                    result['segments'].append({
+                        **segment, 'start': words[0]['start'], 'end': words[-1]['end'], 'words': words,
+                        'text': ''.join(word['word'] for word in words),
+                    })
+            _order_words(result)
+        print(f"   🔁 Re-read {len(gaps)} stretch(es) the first pass skipped")
+
+
+def _order_words(result):
+    """Segments in time order, split where a re-read stretch falls inside one."""
+    segments = sorted(result['segments'], key=lambda segment: segment['start'])
+    starts, out = [segment['start'] for segment in segments], []
+    for segment in segments:
+        words, cuts = segment.get('words', []), [at for at in starts if segment['start'] < at < segment['end']]
+        if not words or not cuts:
+            out.append(segment)
+            continue
+        bounds = [float('-inf'), *cuts, float('inf')]
+        for low, high in zip(bounds, bounds[1:]):
+            part = [word for word in words if low <= word['start'] < high]
+            if part:
+                out.append({**segment, 'start': part[0]['start'], 'end': part[-1]['end'], 'words': part,
+                            'text': ''.join(word['word'] for word in part)})
+    result['segments'] = sorted(out, key=lambda segment: segment['start'])
+
+
 def transcribe_audio(audio_path, language: str = 'auto'):
     """
     Transcribes audio using the pre-loaded Whisper model.
@@ -115,35 +155,35 @@ def transcribe_audio(audio_path, language: str = 'auto'):
     with _WHISPER_LOCK:
         result = _WHISPER_MODEL.transcribe(
             audio_path,
-            word_timestamps = True,
-            language        = lang_code,   # None = auto-detect
+            language = lang_code,   # None = auto-detect
+            **_OPTIONS,
         )
+        _reread_skipped(audio_path, result, lang_code or result.get('language'))
 
+    for segment in result.get('segments', []):
+        segment['words'] = join_word_fragments(segment.get('words', []))
+    if lang_code:       # Whisper echoes the name it was given ("urdu"); the rest of the app uses codes
+        result['language'] = language
     detected = result.get('language', 'unknown')
     print(f"   ✅ Language: {detected}")
     return result
 
 
-def get_filler_words(language: str) -> set:
+def join_word_fragments(words: list) -> list:
+    """Glue Whisper's split tokens back onto the word they belong to.
+
+    Whisper often emits "in" + "-house" or a lone "," as separate words; shown
+    as captions they read "in -house" or "word ,". A token that starts with a
+    hyphen or has no letters/digits is appended to the previous word.
     """
-    Returns the filler word set for the detected/specified language.
-    Falls back to English if no filler list exists for that language.
-    """
-    return FILLER_WORDS_BY_LANGUAGE.get(language, FILLER_WORDS_BY_LANGUAGE['en'])
-
-
-if __name__ == "__main__":
-    video_file = "test_video.mp4"
-    audio_file = "extracted_audio.wav"
-
-    if not os.path.exists(video_file):
-        print(f"Error: '{video_file}' not found.")
-    else:
-        success = extract_audio(video_file, audio_file)
-        if success:
-            transcription_data = transcribe_audio(audio_file, language='auto')
-            print("\n--- Transcription Results ---")
-            for segment in transcription_data.get('segments', []):
-                for word in segment.get('words', []):
-                    print(f"Word: '{word['word'].strip():<15}' | "
-                          f"Start: {word['start']:>5.2f}s | End: {word['end']:>5.2f}s")
+    out = []
+    for w in words:
+        token = (w.get('word') or '').strip()
+        fragment = token.startswith('-') or not any(ch.isalnum() for ch in token)
+        if out and token and fragment:
+            prev = out[-1]
+            prev['word'] = prev['word'].rstrip() + token
+            prev['end'] = w.get('end', prev.get('end'))
+        else:
+            out.append(dict(w))
+    return out

@@ -1,5 +1,7 @@
 import pandas as pd
 
+from filler_remover import is_hesitation
+
 
 # ---------------------------------------------------------------------------
 # Base scoring weights
@@ -7,7 +9,40 @@ import pandas as pd
 HIGH_ENERGY_THRESHOLD = 0.01   # RMS above this = background noise during pause
 
 
-def classify_pauses(pause_df: pd.DataFrame, style_profile: dict) -> pd.DataFrame:
+def compress_target(style_profile: dict = None) -> float:
+    """
+    Determines how many seconds of a COMPRESS-flagged pause to keep
+    (the rest of the pause is cut).
+
+    This MUST scale with the style profile's own `compress_duration`
+    threshold — the UI's "Gap Removal" preset (Natural / Balanced /
+    Aggressive) and any reference-video-derived style both set that
+    threshold, and the user expects gaps to actually shrink accordingly.
+
+    Bug this fixes: previously this was a hardcoded 0.4s target. Any
+    style with compress_duration < 0.4s (e.g. the "Aggressive" preset's
+    0.3s, or a fast-paced reference video's threshold, which can go as
+    low as 0.15s) produced pauses classified COMPRESS that were never
+    actually shortened — a duration below 0.4s always clamped back to
+    the pause's own end, i.e. a zero-length cut / no-op.
+
+    The target is set to half of compress_duration, which guarantees it
+    is always strictly smaller than any pause that was classified as
+    COMPRESS (those pauses are, by definition, longer than
+    compress_duration) — so a real cut always happens. It's bounded to
+    a sane [0.05s, 0.6s] range so behaviour stays predictable at both
+    extremes.
+    """
+    compress_duration = (style_profile or {}).get('compress_duration', 0.8)
+    target = compress_duration * 0.5
+    target = max(0.05, min(target, 0.6))
+    # Extra safety margin: never let the target reach the threshold itself,
+    # even if compress_duration is unusually small.
+    target = min(target, max(0.05, compress_duration - 0.05))
+    return round(target, 3)
+
+
+def classify_pauses(pause_df: pd.DataFrame, style_profile: dict, language: str = "en") -> pd.DataFrame:
     """
     Labels every detected pause as CUT, COMPRESS, or KEEP.
 
@@ -19,7 +54,7 @@ def classify_pauses(pause_df: pd.DataFrame, style_profile: dict) -> pd.DataFrame
     2. SPEAKING RATE (speaking_rate)
        Fast-talking reference (>3.5 w/s): apply a tighter filler-word penalty.
        If the current word before the pause is a filler ("um", "uh", "like",
-       "you know", "so", "basically") AND the reference creator speaks fast,
+       hesitation sound) AND the reference creator speaks fast,
        we upgrade the decision one step more aggressively (KEEP→COMPRESS,
        COMPRESS→CUT). Fast creators don't tolerate fillers.
 
@@ -34,21 +69,19 @@ def classify_pauses(pause_df: pd.DataFrame, style_profile: dict) -> pd.DataFrame
        style_extractor, but boundary_keep_boost counter-balances it here
        so we never over-cut natural sentence breaks even in aggressive profiles)
 
+    Whatever the metrics say, a gap that sounds like speech (see speech_gaps.py)
+    is kept: the transcript missed words there.
+
     Returns the input DataFrame with an added 'decision' column.
     """
     max_duration      = style_profile.get('max_duration',        1.5)
     compress_duration = style_profile.get('compress_duration',   0.8)
+    keep_len          = compress_target(style_profile)
     speaking_rate     = style_profile.get('speaking_rate',       2.5)
     boundary_boost    = style_profile.get('boundary_keep_boost', 0.0)
 
     # Filler-word penalty is only activated for fast-speaking references
     apply_filler_penalty = speaking_rate > 3.5
-
-    FILLER_WORDS = {
-        'um', 'uh', 'umm', 'uhh', 'hmm', 'er', 'err',
-        'like', 'so', 'basically', 'literally', 'actually',
-        'you know', 'i mean', 'right', 'okay', 'ok'
-    }
 
     df = pause_df.copy()
 
@@ -88,7 +121,7 @@ def classify_pauses(pause_df: pd.DataFrame, style_profile: dict) -> pd.DataFrame
         # ── Step 2: Filler-word penalty (Metric 2 — speaking rate) ───────
         # Only active when the reference creator speaks fast (>3.5 w/s).
         # Pauses after filler words are hesitation gaps, not rhythm — cut them.
-        if apply_filler_penalty and prev_word in FILLER_WORDS:
+        if apply_filler_penalty and is_hesitation(prev_word, language):
             if decision == 'KEEP':
                 decision = 'COMPRESS'
                 reason  += f' → upgraded to COMPRESS (filler word "{prev_word}", fast ref)'
@@ -115,44 +148,19 @@ def classify_pauses(pause_df: pd.DataFrame, style_profile: dict) -> pd.DataFrame
             decision = 'COMPRESS'
             reason  += f' → downgraded to COMPRESS (low speech density {speech_density:.1f} w/s)'
 
+        # ── Step 5: a COMPRESS must actually shorten the pause ───────────
+        if decision == 'COMPRESS' and duration <= keep_len:
+            decision = 'KEEP'
+            reason  += f' → kept (already shorter than the {keep_len}s a compress leaves)'
+
+        # ── Step 6: sound as loud as speech is not a pause ────────────────
+        if row.get('sounds_like_speech', False):
+            decision = 'KEEP'
+            reason   = 'kept: as loud as speech, though no words were recognised'
+
         decisions.append(decision)
         reasons.append(reason)
 
     df['decision'] = decisions
     df['reason']   = reasons
     return df
-
-
-if __name__ == "__main__":
-    sample_data = pd.DataFrame([
-        {'start_time': 1.0,  'end_time': 1.2,  'duration': 0.2,  'rms_energy': 0.001, 'is_sentence_boundary': False, 'previous_word': 'the',    'next_word': 'cat'},
-        {'start_time': 2.5,  'end_time': 3.1,  'duration': 0.6,  'rms_energy': 0.002, 'is_sentence_boundary': False, 'previous_word': 'um',     'next_word': 'so'},
-        {'start_time': 5.0,  'end_time': 6.0,  'duration': 1.0,  'rms_energy': 0.002, 'is_sentence_boundary': True,  'previous_word': 'done.',  'next_word': 'Now'},
-        {'start_time': 8.0,  'end_time': 10.5, 'duration': 2.5,  'rms_energy': 0.001, 'is_sentence_boundary': False, 'previous_word': 'and',    'next_word': 'then'},
-        {'start_time': 12.0, 'end_time': 12.9, 'duration': 0.9,  'rms_energy': 0.015, 'is_sentence_boundary': True,  'previous_word': 'right!', 'next_word': 'Let'},
-        {'start_time': 15.0, 'end_time': 15.5, 'duration': 0.5,  'rms_energy': 0.001, 'is_sentence_boundary': False, 'previous_word': 'like',   'next_word': 'i'},
-    ])
-
-    print("=== TEST 1: Balanced profile (no reference) ===")
-    balanced = {
-        "max_duration": 1.5, "compress_duration": 0.8,
-        "speaking_rate": 2.5, "boundary_keep_boost": 0.0
-    }
-    r1 = classify_pauses(sample_data, balanced)
-    print(r1[['start_time', 'duration', 'previous_word', 'is_sentence_boundary', 'decision', 'reason']].to_string(index=False))
-
-    print("\n=== TEST 2: Fast-talking reference (filler penalty active) ===")
-    fast_ref = {
-        "max_duration": 0.8, "compress_duration": 0.4,
-        "speaking_rate": 4.2, "boundary_keep_boost": 0.3
-    }
-    r2 = classify_pauses(sample_data, fast_ref)
-    print(r2[['start_time', 'duration', 'previous_word', 'is_sentence_boundary', 'decision', 'reason']].to_string(index=False))
-
-    print("\n=== TEST 3: Podcast-style reference (protect sentence boundaries) ===")
-    podcast = {
-        "max_duration": 2.0, "compress_duration": 1.0,
-        "speaking_rate": 1.8, "boundary_keep_boost": 0.5
-    }
-    r3 = classify_pauses(sample_data, podcast)
-    print(r3[['start_time', 'duration', 'previous_word', 'is_sentence_boundary', 'decision', 'reason']].to_string(index=False))

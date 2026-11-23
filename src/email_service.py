@@ -12,8 +12,45 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "")
 FROM_ADDRESS   = os.environ.get("RESEND_FROM", "CutSmart <onboarding@resend.dev>")
 
 
+def _smtp_configured() -> bool:
+    return bool(os.environ.get("SMTP_USER", "").strip() and os.environ.get("SMTP_PASSWORD", "").strip())
+
+
+def _dev_mode() -> bool:
+    """No email provider configured -> print codes/links in the terminal instead of emailing."""
+    if os.environ.get("DEV_MODE") == "1":
+        return True
+    return not (_smtp_configured() or os.environ.get("RESEND_API_KEY", "").strip())
+
+
+def _deliver(params: dict) -> None:
+    """Send via Gmail/any SMTP if SMTP_USER + SMTP_PASSWORD are set, otherwise via Resend."""
+    if not _smtp_configured():
+        resend.Emails.send(params)
+        return
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    user = os.environ["SMTP_USER"].strip()
+    pwd = os.environ["SMTP_PASSWORD"].replace(" ", "")
+    host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    port = int(os.environ.get("SMTP_PORT", "587"))
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = params["subject"]
+    msg["From"] = os.environ.get("SMTP_FROM", f"CutSmart <{user}>")
+    msg["To"] = ", ".join(params["to"])
+    msg.attach(MIMEText(params["html"], "html"))
+    with smtplib.SMTP(host, port, timeout=20) as server:
+        server.starttls()
+        server.login(user, pwd)
+        server.sendmail(user, params["to"], msg.as_string())
+
+
 def send_otp_email(to_email: str, otp: str) -> bool:
     """Send a 6-digit OTP to verify the user's email address."""
+    if _dev_mode():
+        print(f"\n[DEV MODE] Verification code for {to_email}: {otp}\n", flush=True)
+        return True
     try:
         params = {
             "from": FROM_ADDRESS,
@@ -59,7 +96,7 @@ def send_otp_email(to_email: str, otp: str) -> bool:
 </body>
 </html>""",
         }
-        resend.Emails.send(params)
+        _deliver(params)
         return True
     except Exception as e:
         print(f"[email] Failed to send OTP to {to_email}: {e}")
@@ -67,6 +104,13 @@ def send_otp_email(to_email: str, otp: str) -> bool:
 
 
 def send_reset_email(to_email: str, token: str, base_url: str) -> bool:
+    if _dev_mode():
+        print(f"\n[DEV MODE] Password reset for {to_email}: {base_url}/reset_password.html?token={token}\n", flush=True)
+        return True
+    return _send_reset_email_real(to_email, token, base_url)
+
+
+def _send_reset_email_real(to_email: str, token: str, base_url: str) -> bool:
     """Send a password-reset link containing a one-time token."""
     reset_url = f"{base_url}/reset_password.html?token={token}"
     try:
@@ -117,7 +161,7 @@ def send_reset_email(to_email: str, token: str, base_url: str) -> bool:
 </body>
 </html>""",
         }
-        resend.Emails.send(params)
+        _deliver(params)
         return True
     except Exception as e:
         print(f"[email] Failed to send reset email to {to_email}: {e}")

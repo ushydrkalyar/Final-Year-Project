@@ -16,51 +16,60 @@ Routes:
 
 ── Security features ────────────────────────────────────────────────────────
   • Unverified accounts cannot log in
-  • 5 failed login attempts → 15-minute account lockout
+  • 5 failed logins from one IP → 15-minute lockout of that email for that IP
   • OTP codes expire after 10 minutes
   • Password-reset tokens expire after 1 hour and are single-use
   • Forgot-password always returns 200 (prevents email enumeration)
 ──────────────────────────────────────────────────────────────────────────────
 """
+import hashlib
 import os
 import re
-import random
 import secrets
 import uuid
+from urllib.parse import urlsplit
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
 import psycopg2
-import psycopg2.extras
-import psycopg2.pool
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, EmailStr, field_validator
+from starlette.concurrency import run_in_threadpool
 from starlette.config import Config
 
+import db
 import email_service
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL is not set. Set it to your Postgres connection string."
-    )
-
-_pool = psycopg2.pool.SimpleConnectionPool(1, 10, dsn=DATABASE_URL)
-
-JWT_SECRET        = os.environ.get("JWT_SECRET", "dev-only-secret-change-before-deploying")
+JWT_SECRET = os.environ.get("JWT_SECRET", "").strip()
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET is not set. Put a long random value in ../.env "
+                       "(python -c 'import secrets; print(secrets.token_urlsafe(48))').")
 JWT_ALGORITHM     = "HS256"
 JWT_EXPIRE_MINUTES = 60 * 24 * 7   # 7 days
 COOKIE_NAME       = "session_token"
+PENDING_COOKIE    = "pending_signup"
+
+# Links we email, and where Google returns to, come from configuration, never from the
+# request's Host header (the client controls that).
+APP_BASE_URL = (os.environ.get("APP_BASE_URL", "").strip() or "http://localhost:8000").rstrip("/")
+GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "").strip() or f"{APP_BASE_URL}/auth/google/callback"
+
+SECURE_COOKIES = APP_BASE_URL.startswith("https://")
 
 # Google OAuth
 GOOGLE_CLIENT_ID     = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+# True only once real credentials are in .env — lets us fail gracefully
+# (redirect back with a friendly message) instead of sending the user
+# to Google with an empty client_id, which Google shows as a raw,
+# unbranded "Error 401: invalid_client" page.
+GOOGLE_CONFIGURED = bool(GOOGLE_CLIENT_ID.strip() and GOOGLE_CLIENT_SECRET.strip())
 
 _starlette_config = Config(environ={
     "GOOGLE_CLIENT_ID":     GOOGLE_CLIENT_ID,
@@ -77,93 +86,73 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 # ---------------------------------------------------------------------------
-# DB helpers
+# Schema
 # ---------------------------------------------------------------------------
-class _PooledConn:
-    def __init__(self):
-        self._conn = _pool.getconn()
-        self._conn.cursor_factory = psycopg2.extras.RealDictCursor
-        self._cur = self._conn.cursor()
-
-    def execute(self, sql: str, params: tuple = ()):
-        self._cur.execute(sql.replace("?", "%s"), params)
-        return self._cur
-
-    def commit(self):
-        self._conn.commit()
-
-    def close(self):
-        self._cur.close()
-        _pool.putconn(self._conn)
-
-
-def _get_db() -> _PooledConn:
-    return _PooledConn()
-
-
 def init_db():
     """Create all tables at server startup."""
-    conn = _get_db()
+    with db.transaction() as cur:
 
-    # Core users table
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id            TEXT PRIMARY KEY,
-            name          TEXT NOT NULL,
-            email         TEXT NOT NULL UNIQUE,
-            password_hash TEXT,
-            avatar_color  TEXT NOT NULL,
-            created_at    TEXT NOT NULL,
-            email_verified BOOLEAN NOT NULL DEFAULT FALSE,
-            google_id     TEXT UNIQUE
-        )
-    """)
+        # Core users table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id            TEXT PRIMARY KEY,
+                name          TEXT NOT NULL,
+                email         TEXT NOT NULL UNIQUE,
+                password_hash TEXT,
+                avatar_color  TEXT NOT NULL,
+                created_at    TEXT NOT NULL,
+                email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+                google_id     TEXT UNIQUE
+            )
+        """)
 
-    # Migrate: add columns if this is an existing DB that lacked them
-    for col, defn in [
-        ("email_verified", "BOOLEAN NOT NULL DEFAULT FALSE"),
-        ("google_id",      "TEXT UNIQUE"),
-    ]:
-        try:
-            conn.execute(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col} {defn}")
-            conn.commit()
-        except Exception:
-            conn._conn.rollback()
+        # Migrate: add columns if this is an existing DB that lacked them
+        for col, defn in [
+            ("email_verified", "BOOLEAN NOT NULL DEFAULT FALSE"),
+            ("google_id",      "TEXT UNIQUE"),
+        ]:
+            cur.execute(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col} {defn}")
 
-    # Email OTP verification codes
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS email_verifications (
-            id         TEXT PRIMARY KEY,
-            email      TEXT NOT NULL,
-            otp        TEXT NOT NULL,
-            expires_at TEXT NOT NULL,
-            verified   BOOLEAN NOT NULL DEFAULT FALSE
-        )
-    """)
+        # Bumped on password change/reset: revokes every session issued before
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0")
 
-    # Password reset tokens
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS password_reset_tokens (
-            id         TEXT PRIMARY KEY,
-            user_id    TEXT NOT NULL,
-            token      TEXT NOT NULL UNIQUE,
-            expires_at TEXT NOT NULL,
-            used       BOOLEAN NOT NULL DEFAULT FALSE
-        )
-    """)
+        # Email OTP verification codes
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS email_verifications (
+                id         TEXT PRIMARY KEY,
+                email      TEXT NOT NULL,
+                otp        TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                verified   BOOLEAN NOT NULL DEFAULT FALSE
+            )
+        """)
 
-    # Login attempt tracking (for lockout)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS login_attempts (
-            id           TEXT PRIMARY KEY,
-            email        TEXT NOT NULL,
-            attempted_at TEXT NOT NULL,
-            success      BOOLEAN NOT NULL
-        )
-    """)
+        cur.execute("ALTER TABLE email_verifications ADD COLUMN IF NOT EXISTS attempts INTEGER NOT NULL DEFAULT 0")
 
-    conn.commit()
-    conn.close()
+        # Password reset tokens
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                id         TEXT PRIMARY KEY,
+                user_id    TEXT NOT NULL,
+                token      TEXT NOT NULL UNIQUE,
+                expires_at TEXT NOT NULL,
+                used       BOOLEAN NOT NULL DEFAULT FALSE
+            )
+        """)
+
+        # Login attempt tracking (for lockout)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS login_attempts (
+                id           TEXT PRIMARY KEY,
+                email        TEXT NOT NULL,
+                attempted_at TEXT NOT NULL,
+                success      BOOLEAN NOT NULL
+            )
+        """)
+        cur.execute("ALTER TABLE login_attempts ADD COLUMN IF NOT EXISTS ip TEXT")
+
+        for table in ("users", "email_verifications", "password_reset_tokens", "login_attempts"):
+            db.enable_rls(cur, table)
 
 
 # ---------------------------------------------------------------------------
@@ -180,28 +169,30 @@ def _verify_password(password: str, password_hash: str) -> bool:
 # ---------------------------------------------------------------------------
 # JWT session helpers
 # ---------------------------------------------------------------------------
-def _create_token(user_id: str) -> str:
+def _create_token(user: dict) -> str:
     now = datetime.now(timezone.utc)
-    payload = {"sub": user_id, "iat": now, "exp": now + timedelta(minutes=JWT_EXPIRE_MINUTES)}
+    payload = {"sub": user["id"], "ver": user["token_version"], "iat": now, "exp": now + timedelta(minutes=JWT_EXPIRE_MINUTES)}
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
-def _decode_token(token: str) -> str:
+def _decode_token(token: str) -> dict:
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload["sub"]
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM],
+                             options={"require": ["sub", "exp"]})
+        return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Session expired, please log in again")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid session")
 
 
-def _set_session_cookie(response: Response, user_id: str):
-    token = _create_token(user_id)
+def _set_session_cookie(response: Response, user: dict):
+    token = _create_token(user)
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
         httponly=True,
+        secure=SECURE_COOKIES,
         samesite="lax",
         max_age=JWT_EXPIRE_MINUTES * 60,
         path="/",
@@ -209,46 +200,71 @@ def _set_session_cookie(response: Response, user_id: str):
 
 
 # ---------------------------------------------------------------------------
+# Pending-signup proof
+# ---------------------------------------------------------------------------
+# An emailed code proves who owns the inbox, not who chose the password waiting on the
+# account: anyone can sign up with someone else's email before or after they do. So a
+# code only verifies in a browser that proved it knows the password now on the account
+# (by signing up with it, or logging in with it).
+def _password_fingerprint(password_hash: str) -> str:
+    return hashlib.sha256(password_hash.encode("utf-8")).hexdigest()
+
+
+def _set_pending_cookie(response: Response, email: str, password_hash: str):
+    token = jwt.encode({"pending": email, "pw": _password_fingerprint(password_hash),
+                        "exp": datetime.now(timezone.utc) + timedelta(days=1)},
+                       JWT_SECRET, algorithm=JWT_ALGORITHM)
+    response.set_cookie(PENDING_COOKIE, token, httponly=True, secure=SECURE_COOKIES, samesite="lax", max_age=86400, path="/auth")
+
+
+def _proved_password(request: Request, email: str, user: dict | None) -> bool:
+    if not user or user["email_verified"] or not user["password_hash"]:
+        return False
+    try:
+        claim = jwt.decode(request.cookies.get(PENDING_COOKIE, ""), JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except jwt.InvalidTokenError:
+        return False
+    return claim.get("pending") == email and claim.get("pw") == _password_fingerprint(user["password_hash"])
+
+
+# ---------------------------------------------------------------------------
 # OTP helpers
 # ---------------------------------------------------------------------------
 def _generate_otp() -> str:
-    return str(random.randint(100000, 999999))
+    return f"{secrets.randbelow(900000) + 100000}"
 
 
-def _store_otp(email: str, otp: str):
-    """Save a fresh OTP, invalidating any previous ones for the same email."""
-    conn = _get_db()
-    # Invalidate old codes
-    conn.execute("DELETE FROM email_verifications WHERE email = ?", (email,))
+OTP_MAX_ATTEMPTS = 5
+
+
+def _issue_otp(cur, email: str) -> str:
+    """Save and return a fresh code, invalidating earlier ones for the same email."""
+    otp = _generate_otp()
+    cur.execute("DELETE FROM email_verifications WHERE email = %s", (email,))
     expires = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
-    conn.execute(
-        "INSERT INTO email_verifications (id, email, otp, expires_at) VALUES (?, ?, ?, ?)",
+    cur.execute(
+        "INSERT INTO email_verifications (id, email, otp, expires_at) VALUES (%s, %s, %s, %s)",
         (str(uuid.uuid4()), email, otp, expires),
     )
-    conn.commit()
-    conn.close()
+    return otp
 
 
-def _verify_otp(email: str, otp: str) -> bool:
-    """Returns True and marks as verified if OTP matches and is not expired."""
-    conn = _get_db()
-    row = conn.execute(
-        "SELECT * FROM email_verifications WHERE email = ? AND verified = FALSE ORDER BY expires_at DESC LIMIT 1",
+def _consume_otp(cur, email: str, otp: str) -> bool:
+    """True, and the code is used up, if it matches and has not expired."""
+    cur.execute(
+        "SELECT * FROM email_verifications WHERE email = %s AND verified = FALSE "
+        "ORDER BY expires_at DESC LIMIT 1 FOR UPDATE",
         (email,),
-    ).fetchone()
-    if not row:
-        conn.close()
+    )
+    row = cur.fetchone()
+    if (not row or row["attempts"] >= OTP_MAX_ATTEMPTS
+            or datetime.now(timezone.utc) > datetime.fromisoformat(row["expires_at"])):
         return False
-    expires = datetime.fromisoformat(row["expires_at"])
-    if datetime.now(timezone.utc) > expires:
-        conn.close()
+    if not secrets.compare_digest(row["otp"].encode(), otp.encode()):
+        # A burnt code's row stays: it is also what the resend cooldown is measured from
+        cur.execute("UPDATE email_verifications SET attempts = attempts + 1 WHERE id = %s", (row["id"],))
         return False
-    if row["otp"] != otp:
-        conn.close()
-        return False
-    conn.execute("UPDATE email_verifications SET verified = TRUE WHERE id = ?", (row["id"],))
-    conn.commit()
-    conn.close()
+    cur.execute("UPDATE email_verifications SET verified = TRUE WHERE id = %s", (row["id"],))
     return True
 
 
@@ -259,32 +275,41 @@ LOCKOUT_MAX_ATTEMPTS = 5
 LOCKOUT_WINDOW_MINUTES = 15
 
 
-def _record_attempt(email: str, success: bool):
-    conn = _get_db()
-    conn.execute(
-        "INSERT INTO login_attempts (id, email, attempted_at, success) VALUES (?, ?, ?, ?)",
-        (str(uuid.uuid4()), email, datetime.now(timezone.utc).isoformat(), success),
-    )
-    conn.commit()
-    conn.close()
+def _begin_attempt(email: str, ip: str) -> str | None:
+    """Reserve a login attempt, or None when this email + IP is locked out.
 
-
-def _is_locked_out(email: str) -> bool:
-    window_start = (datetime.now(timezone.utc) - timedelta(minutes=LOCKOUT_WINDOW_MINUTES)).isoformat()
-    conn = _get_db()
-    row = conn.execute(
-        "SELECT COUNT(*) AS cnt FROM login_attempts "
-        "WHERE email = ? AND success = FALSE AND attempted_at > ?",
-        (email, window_start),
-    ).fetchone()
-    conn.close()
-    return (row["cnt"] or 0) >= LOCKOUT_MAX_ATTEMPTS
+    The attempt counts as a failure before the password is checked, so parallel guesses
+    cannot slip past the limit. Keyed on email + IP, so a stranger cannot lock the owner
+    out; only failures since the caller's last successful login count.
+    """
+    now = datetime.now(timezone.utc)
+    window = (now - timedelta(minutes=LOCKOUT_WINDOW_MINUTES)).isoformat()
+    with db.transaction() as cur:
+        cur.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"login:{email}:{ip}",))
+        cur.execute("DELETE FROM login_attempts WHERE attempted_at < %s", ((now - timedelta(days=1)).isoformat(),))
+        cur.execute(
+            "SELECT COUNT(*) AS cnt FROM login_attempts "
+            "WHERE email = %s AND ip = %s AND success = FALSE AND attempted_at > %s "
+            "AND attempted_at > COALESCE((SELECT MAX(attempted_at) FROM login_attempts "
+            "                             WHERE email = %s AND ip = %s AND success = TRUE), '')",
+            (email, ip, window, email, ip),
+        )
+        if cur.fetchone()["cnt"] >= LOCKOUT_MAX_ATTEMPTS:
+            return None
+        attempt_id = str(uuid.uuid4())
+        cur.execute("INSERT INTO login_attempts (id, email, ip, attempted_at, success) VALUES (%s, %s, %s, %s, FALSE)",
+                    (attempt_id, email, ip, now.isoformat()))
+    return attempt_id
 
 
 # ---------------------------------------------------------------------------
 # User formatting
 # ---------------------------------------------------------------------------
 AVATAR_COLORS = ["#6366F1", "#22C55E", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4"]
+
+
+def _avatar_color(user_id: str) -> str:
+    return AVATAR_COLORS[int(user_id.replace("-", ""), 16) % len(AVATAR_COLORS)]
 
 
 def _public_user(row: dict) -> dict:
@@ -303,6 +328,22 @@ def _public_user(row: dict) -> dict:
 # ---------------------------------------------------------------------------
 # Request models
 # ---------------------------------------------------------------------------
+def _no_nul(v):
+    if v and "\x00" in v:              # Postgres rejects NUL in text
+        raise ValueError("Contains an invalid character")
+    return v
+
+
+def _check_password_strength(v):
+    """The one password rule (signup, reset, change)."""
+    if v is not None:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if not re.search(r"[A-Za-z]", v) or not re.search(r"[0-9]", v):
+            raise ValueError("Password must contain both letters and numbers")
+    return v
+
+
 class SignupRequest(BaseModel):
     name: str
     email: EmailStr
@@ -314,16 +355,9 @@ class SignupRequest(BaseModel):
         v = v.strip()
         if len(v) < 2:
             raise ValueError("Name must be at least 2 characters")
-        return v
+        return _no_nul(v)
 
-    @field_validator("password")
-    @classmethod
-    def _password_strength(cls, v):
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters")
-        if not re.search(r"[A-Za-z]", v) or not re.search(r"[0-9]", v):
-            raise ValueError("Password must contain both letters and numbers")
-        return v
+    _strong = field_validator("password")(_check_password_strength)
 
 
 class LoginRequest(BaseModel):
@@ -348,19 +382,16 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
-    @field_validator("new_password")
-    @classmethod
-    def _pw_strength(cls, v):
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters")
-        if not re.search(r"[A-Za-z]", v) or not re.search(r"[0-9]", v):
-            raise ValueError("Password must contain letters and numbers")
-        return v
+    _strong = field_validator("new_password")(_check_password_strength)
 
 
 class ProfileUpdateRequest(BaseModel):
     name: str | None = None
     password: str | None = None
+    current_password: str | None = None
+
+    _name_clean = field_validator("name")(_no_nul)
+    _strong = field_validator("password")(_check_password_strength)
 
 
 # ---------------------------------------------------------------------------
@@ -370,20 +401,15 @@ def get_current_user(request: Request) -> dict:
     token = request.cookies.get(COOKIE_NAME)
     if not token:
         raise HTTPException(status_code=401, detail="Not logged in")
-    user_id = _decode_token(token)
-    conn = _get_db()
-    row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-    conn.close()
+    claims = _decode_token(token)
+    with db.transaction() as cur:
+        cur.execute("SELECT * FROM users WHERE id = %s", (claims["sub"],))
+        row = cur.fetchone()
     if not row:
         raise HTTPException(status_code=401, detail="Account no longer exists")
+    if claims.get("ver", 0) != row["token_version"]:    # tokens from before versions existed count as 0
+        raise HTTPException(status_code=401, detail="Session expired, please log in again")
     return _public_user(row)
-
-
-def get_current_user_optional(request: Request) -> dict | None:
-    try:
-        return get_current_user(request)
-    except HTTPException:
-        return None
 
 
 # ---------------------------------------------------------------------------
@@ -392,90 +418,88 @@ def get_current_user_optional(request: Request) -> dict | None:
 @router.post("/signup")
 def signup(body: SignupRequest, response: Response):
     email = body.email.lower()
-    conn = _get_db()
-    existing = conn.execute("SELECT id, email_verified FROM users WHERE email = ?", (email,)).fetchone()
+    password_hash = _hash_password(body.password)   # slow on purpose: not inside the transaction
+    try:
+        with db.transaction() as cur:
+            cur.execute("SELECT id, email_verified FROM users WHERE email = %s FOR UPDATE", (email,))
+            existing = cur.fetchone()
+            if existing and existing["email_verified"]:
+                raise HTTPException(status_code=409, detail="An account with this email already exists")
+            if existing:
+                # Not verified, so nobody owns it yet: the latest signup replaces what is pending
+                cur.execute("UPDATE users SET name = %s, password_hash = %s WHERE id = %s",
+                            (body.name, password_hash, existing["id"]))
+                message = "Verification code resent. Check your email."
+            else:
+                user_id = str(uuid.uuid4())
+                cur.execute(
+                    "INSERT INTO users (id, name, email, password_hash, avatar_color, created_at, email_verified) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, FALSE)",
+                    (user_id, body.name, email, password_hash, _avatar_color(user_id),
+                     datetime.now(timezone.utc).isoformat()),
+                )
+                message = "Account created. Check your email for the verification code."
+            # Signing up again must not be a way round the resend cooldown (and the guess limit)
+            otp = None if existing and _code_sent_recently(cur, email) else _issue_otp(cur, email)
+    except psycopg2.errors.UniqueViolation:     # lost a race with a signup for the same email
+        raise HTTPException(status_code=409, detail="An account with this email already exists")
 
-    if existing:
-        if existing["email_verified"]:
-            conn.close()
-            raise HTTPException(status_code=409, detail="An account with this email already exists")
-        # Account exists but unverified — resend OTP
-        conn.close()
-        otp = _generate_otp()
-        _store_otp(email, otp)
+    if otp:
         email_service.send_otp_email(email, otp)
-        return {"message": "Verification code resent. Check your email.", "email": email}
-
-    user_id = str(uuid.uuid4())
-    conn.execute(
-        "INSERT INTO users (id, name, email, password_hash, avatar_color, created_at, email_verified) "
-        "VALUES (?, ?, ?, ?, ?, ?, FALSE)",
-        (
-            user_id,
-            body.name.strip(),
-            email,
-            _hash_password(body.password),
-            AVATAR_COLORS[abs(hash(user_id)) % len(AVATAR_COLORS)],
-            datetime.now(timezone.utc).isoformat(),
-        ),
-    )
-    conn.commit()
-    conn.close()
-
-    # Send OTP
-    otp = _generate_otp()
-    _store_otp(email, otp)
-    email_service.send_otp_email(email, otp)
-
-    return {"message": "Account created. Check your email for the verification code.", "email": email}
+    else:
+        message = "We sent you a code moments ago. Check your email."
+    _set_pending_cookie(response, email, password_hash)
+    return {"message": message, "email": email}
 
 
 @router.post("/verify-email")
-def verify_email(body: VerifyEmailRequest, response: Response):
+def verify_email(body: VerifyEmailRequest, request: Request, response: Response):
     email = body.email.lower()
-    if not _verify_otp(email, body.otp):
+    row = None
+    with db.transaction() as cur:
+        cur.execute("SELECT * FROM users WHERE email = %s FOR UPDATE", (email,))
+        user = cur.fetchone()
+        proved = _proved_password(request, email, user)
+        if proved and _consume_otp(cur, email, body.otp):
+            cur.execute("UPDATE users SET email_verified = TRUE WHERE id = %s RETURNING *", (user["id"],))
+            row = cur.fetchone()
+    if not proved:
+        raise HTTPException(status_code=400, detail="To finish verifying, log in with your password, "
+                                                    "or sign up again, in this browser.")
+    if not row:
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
 
-    conn = _get_db()
-    conn.execute("UPDATE users SET email_verified = TRUE WHERE email = ?", (email,))
-    conn.commit()
-    row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-    conn.close()
-
-    if not row:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    _set_session_cookie(response, row["id"])
+    response.delete_cookie(PENDING_COOKIE, path="/auth")
+    _set_session_cookie(response, row)
     return {"user": _public_user(row)}
+
+
+def _code_sent_recently(cur, email: str) -> bool:
+    cur.execute(
+        "SELECT expires_at FROM email_verifications WHERE email = %s ORDER BY expires_at DESC LIMIT 1",
+        (email,),
+    )
+    recent = cur.fetchone()
+    if not recent:
+        return False
+    sent_at = datetime.fromisoformat(recent["expires_at"]) - timedelta(minutes=10)
+    return (datetime.now(timezone.utc) - sent_at).total_seconds() < 60
 
 
 @router.post("/resend-otp")
 def resend_otp(body: ResendOtpRequest):
     email = body.email.lower()
-    conn = _get_db()
-    row = conn.execute("SELECT id, email_verified FROM users WHERE email = ?", (email,)).fetchone()
-    conn.close()
-
-    if not row:
-        # Don't reveal whether the email exists
-        return {"message": "If that email is registered, a new code has been sent."}
-    if row["email_verified"]:
-        raise HTTPException(status_code=400, detail="Email is already verified")
-
-    # Rate limit: check if OTP was sent in the last 60 seconds
-    conn2 = _get_db()
-    recent = conn2.execute(
-        "SELECT expires_at FROM email_verifications WHERE email = ? ORDER BY expires_at DESC LIMIT 1",
-        (email,),
-    ).fetchone()
-    conn2.close()
-    if recent:
-        sent_at = datetime.fromisoformat(recent["expires_at"]) - timedelta(minutes=10)
-        if (datetime.now(timezone.utc) - sent_at).total_seconds() < 60:
+    with db.transaction() as cur:
+        cur.execute("SELECT id, email_verified FROM users WHERE email = %s", (email,))
+        row = cur.fetchone()
+        if not row:
+            # Don't reveal whether the email exists
+            return {"message": "If that email is registered, a new code has been sent."}
+        if row["email_verified"]:
+            raise HTTPException(status_code=400, detail="Email is already verified")
+        if _code_sent_recently(cur, email):
             raise HTTPException(status_code=429, detail="Please wait 60 seconds before requesting a new code")
-
-    otp = _generate_otp()
-    _store_otp(email, otp)
+        otp = _issue_otp(cur, email)
     email_service.send_otp_email(email, otp)
     return {"message": "A new verification code has been sent to your email."}
 
@@ -484,31 +508,38 @@ def resend_otp(body: ResendOtpRequest):
 # Routes — Login / Logout
 # ---------------------------------------------------------------------------
 @router.post("/login")
-def login(body: LoginRequest, response: Response):
+def login(body: LoginRequest, request: Request, response: Response):
     email = body.email.lower()
 
-    if _is_locked_out(email):
+    attempt = _begin_attempt(email, request.client.host if request.client else "")
+    if not attempt:
         raise HTTPException(
             status_code=429,
-            detail=f"Too many failed attempts. Account locked for {LOCKOUT_WINDOW_MINUTES} minutes."
+            detail=f"Too many failed attempts. Try again in {LOCKOUT_WINDOW_MINUTES} minutes."
         )
 
-    conn = _get_db()
-    row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-    conn.close()
+    with db.transaction() as cur:
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        row = cur.fetchone()
 
     if not row or not row.get("password_hash") or not _verify_password(body.password, row["password_hash"]):
-        _record_attempt(email, False)
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
-    if not row["email_verified"]:
-        raise HTTPException(
-            status_code=403,
-            detail="Please verify your email before logging in. Check your inbox for the verification code."
-        )
+    with db.transaction() as cur:
+        if row["email_verified"]:
+            cur.execute("UPDATE login_attempts SET success = TRUE, attempted_at = %s WHERE id = %s",
+                        (datetime.now(timezone.utc).isoformat(), attempt))
+        else:       # right password: neither a failure nor a login
+            cur.execute("DELETE FROM login_attempts WHERE id = %s", (attempt,))
 
-    _record_attempt(email, True)
-    _set_session_cookie(response, row["id"])
+    if not row["email_verified"]:
+        refusal = JSONResponse(status_code=403, content={
+            "detail": "Please verify your email before logging in. Check your inbox for the verification code."})
+        # The password was right, so this browser may finish the verification
+        _set_pending_cookie(refusal, email, row["password_hash"])
+        return refusal
+
+    _set_session_cookie(response, row)
     return {"user": _public_user(row)}
 
 
@@ -527,23 +558,30 @@ def me(user: dict = Depends(get_current_user)):
 
 
 @router.put("/me")
-def update_me(body: ProfileUpdateRequest, user: dict = Depends(get_current_user)):
-    conn = _get_db()
-    if body.name and body.name.strip():
-        conn.execute("UPDATE users SET name = ? WHERE id = ?", (body.name.strip(), user["id"]))
+def update_me(body: ProfileUpdateRequest, response: Response, user: dict = Depends(get_current_user)):
+    new_hash = old_hash = None
     if body.password:
-        if len(body.password) < 8:
-            conn.close()
-            raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
-        conn.execute(
-            "UPDATE users SET password_hash = ? WHERE id = ?",
-            (_hash_password(body.password), user["id"]),
-        )
-    conn.commit()
-    row = conn.execute("SELECT * FROM users WHERE id = ?", (user["id"],)).fetchone()
-    conn.close()
+        with db.transaction() as cur:
+            cur.execute("SELECT password_hash FROM users WHERE id = %s", (user["id"],))
+            old_hash = cur.fetchone()["password_hash"]
+        # Google-only accounts (no hash) may set a first password without one
+        if old_hash and not (body.current_password and _verify_password(body.current_password, old_hash)):
+            raise HTTPException(status_code=401, detail="wrong_password")
+        new_hash = _hash_password(body.password)
+    with db.transaction() as cur:
+        if body.name and body.name.strip():
+            cur.execute("UPDATE users SET name = %s WHERE id = %s", (body.name.strip(), user["id"]))
+        if new_hash:
+            # ...only if the password is still the one that was just checked
+            cur.execute("UPDATE users SET password_hash = %s, token_version = token_version + 1 WHERE id = %s "
+                        "AND password_hash IS NOT DISTINCT FROM %s RETURNING id", (new_hash, user["id"], old_hash))
+            if not cur.fetchone():
+                raise HTTPException(status_code=409, detail="Your password was changed meanwhile. Try again.")
+        cur.execute("SELECT * FROM users WHERE id = %s", (user["id"],))
+        row = cur.fetchone()
+    if new_hash:
+        _set_session_cookie(response, row)      # this browser stays in; every other session is out
     return {"user": _public_user(row)}
-
 
 
 # ---------------------------------------------------------------------------
@@ -556,9 +594,9 @@ class VerifyPasswordRequest(BaseModel):
 @router.post("/verify-password")
 def verify_current_password(body: VerifyPasswordRequest, user: dict = Depends(get_current_user)):
     """Check the user's current password without changing anything."""
-    conn = _get_db()
-    row = conn.execute("SELECT password_hash FROM users WHERE id = ?", (user["id"],)).fetchone()
-    conn.close()
+    with db.transaction() as cur:
+        cur.execute("SELECT password_hash FROM users WHERE id = %s", (user["id"],))
+        row = cur.fetchone()
 
     if not row or not row.get("password_hash"):
         # Google-only accounts have no password
@@ -574,111 +612,104 @@ def verify_current_password(body: VerifyPasswordRequest, user: dict = Depends(ge
 # Routes — Forgot / Reset Password
 # ---------------------------------------------------------------------------
 @router.post("/forgot-password")
-def forgot_password(body: ForgotPasswordRequest, request: Request):
+def forgot_password(body: ForgotPasswordRequest):
     email = body.email.lower()
-    conn = _get_db()
-    row = conn.execute("SELECT id FROM users WHERE email = ? AND email_verified = TRUE", (email,)).fetchone()
-    conn.close()
-
-    # Always return 200 — don't reveal whether email exists
-    if not row:
-        return {"message": "If that email is registered, you'll receive a reset link shortly."}
-
     token = secrets.token_urlsafe(48)
-    expires = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
-
-    conn2 = _get_db()
-    conn2.execute(
-        "INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)",
-        (str(uuid.uuid4()), row["id"], token, expires),
-    )
-    conn2.commit()
-    conn2.close()
-
-    base_url = str(request.base_url).rstrip("/")
-    email_service.send_reset_email(email, token, base_url)
+    with db.transaction() as cur:
+        cur.execute("SELECT id FROM users WHERE email = %s AND email_verified = TRUE", (email,))
+        row = cur.fetchone()
+        if row:
+            expires = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+            cur.execute(
+                "INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES (%s, %s, %s, %s)",
+                (str(uuid.uuid4()), row["id"], token, expires),
+            )
+    if row:
+        email_service.send_reset_email(email, token, APP_BASE_URL)
+    # Always return 200 — don't reveal whether email exists
     return {"message": "If that email is registered, you'll receive a reset link shortly."}
 
 
 @router.post("/reset-password")
 def reset_password(body: ResetPasswordRequest):
-    conn = _get_db()
-    row = conn.execute(
-        "SELECT * FROM password_reset_tokens WHERE token = ? AND used = FALSE",
-        (body.token,),
-    ).fetchone()
-
-    if not row:
-        conn.close()
-        raise HTTPException(status_code=400, detail="Invalid or already used reset link")
-
-    expires = datetime.fromisoformat(row["expires_at"])
-    if datetime.now(timezone.utc) > expires:
-        conn.close()
-        raise HTTPException(status_code=400, detail="This reset link has expired. Please request a new one.")
-
-    conn.execute(
-        "UPDATE users SET password_hash = ? WHERE id = ?",
-        (_hash_password(body.new_password), row["user_id"]),
-    )
-    conn.execute("UPDATE password_reset_tokens SET used = TRUE WHERE id = ?", (row["id"],))
-    conn.commit()
-    conn.close()
+    new_hash = _hash_password(body.new_password)
+    with db.transaction() as cur:
+        # Claim the token atomically: two simultaneous uses cannot both succeed
+        cur.execute("UPDATE password_reset_tokens SET used = TRUE "
+                    "WHERE token = %s AND used = FALSE RETURNING user_id, expires_at", (body.token,))
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=400, detail="Invalid or already used reset link")
+        if datetime.now(timezone.utc) > datetime.fromisoformat(row["expires_at"]):
+            raise HTTPException(status_code=400, detail="This reset link has expired. Please request a new one.")
+        cur.execute("UPDATE users SET password_hash = %s, token_version = token_version + 1 WHERE id = %s",
+                    (new_hash, row["user_id"]))
+        cur.execute("UPDATE password_reset_tokens SET used = TRUE WHERE user_id = %s", (row["user_id"],))
     return {"message": "Password updated successfully. You can now log in."}
 
 
 # ---------------------------------------------------------------------------
 # Routes — Google OAuth
 # ---------------------------------------------------------------------------
+def _google_account(google_id: str, email: str, name: str) -> dict:
+    """The user row for a Google sign-in, linking or creating it as needed (blocking)."""
+    with db.transaction() as cur:
+        cur.execute("SELECT * FROM users WHERE google_id = %s", (google_id,))
+        row = cur.fetchone()
+        if row:
+            return row
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        row = cur.fetchone()
+        if row and row["email_verified"]:     # regular account -> link Google
+            cur.execute("UPDATE users SET google_id = %s WHERE id = %s RETURNING *", (google_id, row["id"]))
+            return cur.fetchone()
+        if row:     # never verified: whoever typed that name and password has not shown they own the inbox
+            cur.execute("UPDATE users SET google_id = %s, email_verified = TRUE, password_hash = NULL, name = %s "
+                        "WHERE id = %s RETURNING *", (google_id, name, row["id"]))
+            return cur.fetchone()
+        user_id = str(uuid.uuid4())
+        cur.execute(
+            "INSERT INTO users (id, name, email, password_hash, avatar_color, created_at, email_verified, google_id) "
+            "VALUES (%s, %s, %s, NULL, %s, %s, TRUE, %s) RETURNING *",
+            (user_id, name, email, _avatar_color(user_id), datetime.now(timezone.utc).isoformat(), google_id),
+        )
+        return cur.fetchone()
+
+
 @router.get("/google")
 async def google_login(request: Request):
-    redirect_uri = str(request.url_for("google_callback"))
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    if not GOOGLE_CONFIGURED:
+        return RedirectResponse(url="/login.html?google_error=not_configured")
+    target = urlsplit(GOOGLE_REDIRECT_URI)
+    if request.url.netloc != target.netloc and "canonical" not in request.query_params:
+        # The OAuth state cookie must be set on the host Google returns to
+        # (opening 127.0.0.1 when localhost is registered used to fail here).
+        return RedirectResponse(url=f"{target.scheme}://{target.netloc}/auth/google?canonical=1")
+    return await oauth.google.authorize_redirect(request, GOOGLE_REDIRECT_URI)
 
 
 @router.get("/google/callback", name="google_callback")
-async def google_callback(request: Request, response: Response):
+async def google_callback(request: Request):
+    if not GOOGLE_CONFIGURED:
+        return RedirectResponse(url="/login.html?google_error=not_configured")
     try:
         token = await oauth.google.authorize_access_token(request)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Google authentication failed")
+    except Exception as e:
+        # Print the real reason to the server terminal — a silent redirect
+        # is friendly for the user but useless for debugging a failure.
+        print(f"\n❌ Google OAuth callback failed: {type(e).__name__}: {e}\n")
+        return RedirectResponse(url="/login.html?google_error=failed")
 
     user_info = token.get("userinfo") or await oauth.google.userinfo(token=token)
+    if (not user_info.get("sub") or not user_info.get("email")
+            or user_info.get("email_verified") not in (True, "true")):
+        return RedirectResponse(url="/login.html?google_error=failed")
     google_id = user_info["sub"]
     email     = user_info["email"].lower()
-    name      = user_info.get("name", email.split("@")[0])
+    name      = user_info.get("name") or email.split("@")[0]
 
-    conn = _get_db()
-    row = conn.execute("SELECT * FROM users WHERE google_id = ?", (google_id,)).fetchone()
+    row = await run_in_threadpool(_google_account, google_id, email, name)
 
-    if not row:
-        # Check if email already exists (regular account → link Google)
-        row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-        if row:
-            conn.execute(
-                "UPDATE users SET google_id = ?, email_verified = TRUE WHERE id = ?",
-                (google_id, row["id"]),
-            )
-            conn.commit()
-            row = conn.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
-        else:
-            # Brand new Google user
-            user_id = str(uuid.uuid4())
-            conn.execute(
-                "INSERT INTO users (id, name, email, password_hash, avatar_color, created_at, email_verified, google_id) "
-                "VALUES (?, ?, ?, NULL, ?, ?, TRUE, ?)",
-                (
-                    user_id, name, email,
-                    AVATAR_COLORS[abs(hash(user_id)) % len(AVATAR_COLORS)],
-                    datetime.now(timezone.utc).isoformat(),
-                    google_id,
-                ),
-            )
-            conn.commit()
-            row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-
-    conn.close()
-
-    redirect = RedirectResponse(url="/splash.html?next=/editor.html")
-    _set_session_cookie(redirect, row["id"])
+    redirect = RedirectResponse(url="/splash.html?next=/home.html")
+    _set_session_cookie(redirect, row)
     return redirect

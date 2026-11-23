@@ -1,0 +1,2682 @@
+[
+{
+"family": "Abril Fatface",
+"files": [
+{
+"file": "AbrilFatface-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Alegreya Sans",
+"files": [
+{
+"file": "AlegreyaSans-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "AlegreyaSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "AlegreyaSans-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+},
+{
+"file": "AlegreyaSans-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+},
+{
+"file": "AlegreyaSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Alfa Slab One",
+"files": [
+{
+"file": "AlfaSlabOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Amatic SC",
+"files": [
+{
+"file": "AmaticSC-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "AmaticSC-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Anton",
+"files": [
+{
+"file": "Anton-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Anybody",
+"files": [
+{
+"file": "Anybody-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Anybody-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Anybody Black",
+"files": [
+{
+"file": "Anybody-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Anybody ExtraBold",
+"files": [
+{
+"file": "Anybody-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Architects Daughter",
+"files": [
+{
+"file": "ArchitectsDaughter-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Archivo",
+"files": [
+{
+"file": "Archivo-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Archivo-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Archivo Black",
+"files": [
+{
+"file": "Archivo-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "ArchivoBlack-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Archivo ExtraBold",
+"files": [
+{
+"file": "Archivo-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Audiowide",
+"files": [
+{
+"file": "Audiowide-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Bakbak One",
+"files": [
+{
+"file": "BakbakOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Baloo 2",
+"files": [
+{
+"file": "Baloo2-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Baloo2-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Baloo 2 ExtraBold",
+"files": [
+{
+"file": "Baloo2-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Bangers",
+"files": [
+{
+"file": "Bangers-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Barlow",
+"files": [
+{
+"file": "Barlow-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "Barlow-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Barlow-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+},
+{
+"file": "Barlow-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+},
+{
+"file": "Barlow-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+},
+{
+"file": "Barlow-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Barlow Condensed",
+"files": [
+{
+"file": "BarlowCondensed-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "BarlowCondensed-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "BarlowCondensed-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+},
+{
+"file": "BarlowCondensed-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+},
+{
+"file": "BarlowCondensed-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+},
+{
+"file": "BarlowCondensed-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Bebas Neue",
+"files": [
+{
+"file": "BebasNeue-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Bevan",
+"files": [
+{
+"file": "Bevan-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Big Shoulders Display",
+"files": [
+{
+"file": "BigShouldersDisplay-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "BigShouldersDisplay-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Big Shoulders Display Black",
+"files": [
+{
+"file": "BigShouldersDisplay-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Big Shoulders Display ExtraBold",
+"files": [
+{
+"file": "BigShouldersDisplay-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Black Han Sans",
+"files": [
+{
+"file": "BlackHanSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Black Ops One",
+"files": [
+{
+"file": "BlackOpsOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Bowlby One",
+"files": [
+{
+"file": "BowlbyOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Bree Serif",
+"files": [
+{
+"file": "BreeSerif-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Bungee",
+"files": [
+{
+"file": "Bungee-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Cabin",
+"files": [
+{
+"file": "Cabin-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Cabin-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Caveat",
+"files": [
+{
+"file": "Caveat-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Caveat-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Changa One",
+"files": [
+{
+"file": "ChangaOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Chango",
+"files": [
+{
+"file": "Chango-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Chewy",
+"files": [
+{
+"file": "Chewy-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Cinzel",
+"files": [
+{
+"file": "Cinzel-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Cinzel-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Cinzel Black",
+"files": [
+{
+"file": "Cinzel-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Coiny",
+"files": [
+{
+"file": "Coiny-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Comfortaa",
+"files": [
+{
+"file": "Comfortaa-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Comfortaa-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Concert One",
+"files": [
+{
+"file": "ConcertOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Cookie",
+"files": [
+{
+"file": "Cookie-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Cormorant Garamond",
+"files": [
+{
+"file": "CormorantGaramond-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "CormorantGaramond-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Creepster",
+"files": [
+{
+"file": "Creepster-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Dancing Script",
+"files": [
+{
+"file": "DancingScript-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "DancingScript-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Days One",
+"files": [
+{
+"file": "DaysOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Dela Gothic One",
+"files": [
+{
+"file": "DelaGothicOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "DM Serif Display",
+"files": [
+{
+"file": "DMSerifDisplay-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Exo 2",
+"files": [
+{
+"file": "Exo2-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Exo2-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Exo 2 Black",
+"files": [
+{
+"file": "Exo2-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Exo 2 ExtraBold",
+"files": [
+{
+"file": "Exo2-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Figtree",
+"files": [
+{
+"file": "Figtree-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Figtree-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Figtree Black",
+"files": [
+{
+"file": "Figtree-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Figtree ExtraBold",
+"files": [
+{
+"file": "Figtree-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Fjalla One",
+"files": [
+{
+"file": "FjallaOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Fredoka",
+"files": [
+{
+"file": "Fredoka-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Fredoka-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Fugaz One",
+"files": [
+{
+"file": "FugazOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Gloock",
+"files": [
+{
+"file": "Gloock-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Gochi Hand",
+"files": [
+{
+"file": "GochiHand-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Great Vibes",
+"files": [
+{
+"file": "GreatVibes-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Heebo",
+"files": [
+{
+"file": "Heebo-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Heebo-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Heebo Black",
+"files": [
+{
+"file": "Heebo-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Heebo ExtraBold",
+"files": [
+{
+"file": "Heebo-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Holtwood One SC",
+"files": [
+{
+"file": "HoltwoodOneSC-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "IBM Plex Sans",
+"files": [
+{
+"file": "IBMPlexSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "IBMPlexSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Instrument Sans",
+"files": [
+{
+"file": "InstrumentSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "InstrumentSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Instrument Serif",
+"files": [
+{
+"file": "InstrumentSerif-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "JetBrains Mono",
+"files": [
+{
+"file": "JetBrainsMono-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "JetBrainsMono-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "JetBrains Mono ExtraBold",
+"files": [
+{
+"file": "JetBrainsMono-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Josefin Sans",
+"files": [
+{
+"file": "JosefinSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "JosefinSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Kanit",
+"files": [
+{
+"file": "Kanit-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Kanit-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Kanit Black",
+"files": [
+{
+"file": "Kanit-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Kanit ExtraBold",
+"files": [
+{
+"file": "Kanit-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Kanit Medium",
+"files": [
+{
+"file": "Kanit-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Kanit SemiBold",
+"files": [
+{
+"file": "Kanit-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Karla",
+"files": [
+{
+"file": "Karla-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Karla-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Karla ExtraBold",
+"files": [
+{
+"file": "Karla-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Kaushan Script",
+"files": [
+{
+"file": "KaushanScript-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Knewave",
+"files": [
+{
+"file": "Knewave-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lato",
+"files": [
+{
+"file": "Lato-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "Lato-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Lato-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+},
+{
+"file": "Lato-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+},
+{
+"file": "Lato-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+},
+{
+"file": "Lato-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "League Spartan",
+"files": [
+{
+"file": "LeagueSpartan-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "LeagueSpartan-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "League Spartan Black",
+"files": [
+{
+"file": "LeagueSpartan-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "League Spartan ExtraBold",
+"files": [
+{
+"file": "LeagueSpartan-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lexend",
+"files": [
+{
+"file": "Lexend-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Lexend-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lexend Black",
+"files": [
+{
+"file": "Lexend-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lexend ExtraBold",
+"files": [
+{
+"file": "Lexend-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Libre Baskerville",
+"files": [
+{
+"file": "LibreBaskerville-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "LibreBaskerville-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lilita One",
+"files": [
+{
+"file": "LilitaOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lobster",
+"files": [
+{
+"file": "Lobster-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lobster Two",
+"files": [
+{
+"file": "LobsterTwo-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "LobsterTwo-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Lora",
+"files": [
+{
+"file": "Lora-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Lora-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Luckiest Guy",
+"files": [
+{
+"file": "LuckiestGuy-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Manrope",
+"files": [
+{
+"file": "Manrope-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Manrope-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Manrope ExtraBold",
+"files": [
+{
+"file": "Manrope-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Marcellus",
+"files": [
+{
+"file": "Marcellus-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Michroma",
+"files": [
+{
+"file": "Michroma-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Modak",
+"files": [
+{
+"file": "Modak-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Monoton",
+"files": [
+{
+"file": "Monoton-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Montserrat",
+"files": [
+{
+"file": "Montserrat-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Montserrat-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Montserrat Black",
+"files": [
+{
+"file": "Montserrat-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Montserrat ExtraBold",
+"files": [
+{
+"file": "Montserrat-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Mulish",
+"files": [
+{
+"file": "Mulish-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Mulish-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Mulish Black",
+"files": [
+{
+"file": "Mulish-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Mulish ExtraBold",
+"files": [
+{
+"file": "Mulish-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Noto Sans",
+"files": [
+{
+"file": "NotoSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "NotoSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Noto Sans Black",
+"files": [
+{
+"file": "NotoSans-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Noto Sans ExtraBold",
+"files": [
+{
+"file": "NotoSans-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Nunito",
+"files": [
+{
+"file": "Nunito-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Nunito-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Nunito Black",
+"files": [
+{
+"file": "Nunito-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Nunito ExtraBold",
+"files": [
+{
+"file": "Nunito-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Oleo Script",
+"files": [
+{
+"file": "OleoScript-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "OleoScript-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Open Sans",
+"files": [
+{
+"file": "OpenSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "OpenSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Open Sans ExtraBold",
+"files": [
+{
+"file": "OpenSans-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Orbitron",
+"files": [
+{
+"file": "Orbitron-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Orbitron-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Orbitron Black",
+"files": [
+{
+"file": "Orbitron-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Orbitron ExtraBold",
+"files": [
+{
+"file": "Orbitron-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Oswald",
+"files": [
+{
+"file": "Oswald-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Oswald-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Outfit",
+"files": [
+{
+"file": "Outfit-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Outfit-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Outfit Black",
+"files": [
+{
+"file": "Outfit-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Outfit ExtraBold",
+"files": [
+{
+"file": "Outfit-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Pacifico",
+"files": [
+{
+"file": "Pacifico-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Passion One",
+"files": [
+{
+"file": "PassionOne-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "PassionOne-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "PassionOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Pathway Gothic One",
+"files": [
+{
+"file": "PathwayGothicOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Patrick Hand",
+"files": [
+{
+"file": "PatrickHand-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Paytone One",
+"files": [
+{
+"file": "PaytoneOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Permanent Marker",
+"files": [
+{
+"file": "PermanentMarker-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Play",
+"files": [
+{
+"file": "Play-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Play-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Playfair Display",
+"files": [
+{
+"file": "PlayfairDisplay-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "PlayfairDisplay-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Playfair Display Black",
+"files": [
+{
+"file": "PlayfairDisplay-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Playfair Display ExtraBold",
+"files": [
+{
+"file": "PlayfairDisplay-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Playfair Display SC",
+"files": [
+{
+"file": "PlayfairDisplaySC-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "PlayfairDisplaySC-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "PlayfairDisplaySC-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Plus Jakarta Sans",
+"files": [
+{
+"file": "PlusJakartaSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "PlusJakartaSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Plus Jakarta Sans ExtraBold",
+"files": [
+{
+"file": "PlusJakartaSans-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Poppins",
+"files": [
+{
+"file": "Poppins-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Poppins-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Poppins Black",
+"files": [
+{
+"file": "Poppins-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Poppins ExtraBold",
+"files": [
+{
+"file": "Poppins-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Poppins Medium",
+"files": [
+{
+"file": "Poppins-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Poppins SemiBold",
+"files": [
+{
+"file": "Poppins-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Press Start 2P",
+"files": [
+{
+"file": "PressStart2P-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Quicksand",
+"files": [
+{
+"file": "Quicksand-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Quicksand-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Racing Sans One",
+"files": [
+{
+"file": "RacingSansOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rajdhani",
+"files": [
+{
+"file": "Rajdhani-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Rajdhani-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+},
+{
+"file": "Rajdhani-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+},
+{
+"file": "Rajdhani-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Raleway",
+"files": [
+{
+"file": "Raleway-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Raleway-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Raleway Black",
+"files": [
+{
+"file": "Raleway-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Raleway ExtraBold",
+"files": [
+{
+"file": "Raleway-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rammetto One",
+"files": [
+{
+"file": "RammettoOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Righteous",
+"files": [
+{
+"file": "Righteous-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Roboto",
+"files": [
+{
+"file": "Roboto-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Roboto-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Roboto Black",
+"files": [
+{
+"file": "Roboto-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Roboto Condensed",
+"files": [
+{
+"file": "RobotoCondensed-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "RobotoCondensed-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Roboto Condensed Black",
+"files": [
+{
+"file": "RobotoCondensed-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Roboto Condensed ExtraBold",
+"files": [
+{
+"file": "RobotoCondensed-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Roboto ExtraBold",
+"files": [
+{
+"file": "Roboto-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rock Salt",
+"files": [
+{
+"file": "RockSalt-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rowdies",
+"files": [
+{
+"file": "Rowdies-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Rowdies-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rubik",
+"files": [
+{
+"file": "Rubik-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Rubik-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rubik Black",
+"files": [
+{
+"file": "Rubik-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rubik ExtraBold",
+"files": [
+{
+"file": "Rubik-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Rubik Mono One",
+"files": [
+{
+"file": "RubikMonoOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Russo One",
+"files": [
+{
+"file": "RussoOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Sacramento",
+"files": [
+{
+"file": "Sacramento-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Saira Condensed",
+"files": [
+{
+"file": "SairaCondensed-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+},
+{
+"file": "SairaCondensed-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "SairaCondensed-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+},
+{
+"file": "SairaCondensed-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+},
+{
+"file": "SairaCondensed-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+},
+{
+"file": "SairaCondensed-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Satisfy",
+"files": [
+{
+"file": "Satisfy-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Shrikhand",
+"files": [
+{
+"file": "Shrikhand-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Sigmar One",
+"files": [
+{
+"file": "SigmarOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Sniglet",
+"files": [
+{
+"file": "Sniglet-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+},
+{
+"file": "Sniglet-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Sora",
+"files": [
+{
+"file": "Sora-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Sora-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Sora ExtraBold",
+"files": [
+{
+"file": "Sora-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Source Sans 3",
+"files": [
+{
+"file": "SourceSans3-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "SourceSans3-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Source Sans 3 Black",
+"files": [
+{
+"file": "SourceSans3-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Source Sans 3 ExtraBold",
+"files": [
+{
+"file": "SourceSans3-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Space Grotesk",
+"files": [
+{
+"file": "SpaceGrotesk-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "SpaceGrotesk-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Space Mono",
+"files": [
+{
+"file": "SpaceMono-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "SpaceMono-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Special Elite",
+"files": [
+{
+"file": "SpecialElite-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Squada One",
+"files": [
+{
+"file": "SquadaOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Staatliches",
+"files": [
+{
+"file": "Staatliches-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Syne",
+"files": [
+{
+"file": "Syne-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Syne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Syne ExtraBold",
+"files": [
+{
+"file": "Syne-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Teko",
+"files": [
+{
+"file": "Teko-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Teko-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Titan One",
+"files": [
+{
+"file": "TitanOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Ubuntu",
+"files": [
+{
+"file": "Ubuntu-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Ubuntu-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+},
+{
+"file": "Ubuntu-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Ultra",
+"files": [
+{
+"file": "Ultra-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Unbounded",
+"files": [
+{
+"file": "Unbounded-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Unbounded-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Unbounded Black",
+"files": [
+{
+"file": "Unbounded-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Unbounded ExtraBold",
+"files": [
+{
+"file": "Unbounded-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Urbanist",
+"files": [
+{
+"file": "Urbanist-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "Urbanist-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Urbanist Black",
+"files": [
+{
+"file": "Urbanist-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Urbanist ExtraBold",
+"files": [
+{
+"file": "Urbanist-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Work Sans",
+"files": [
+{
+"file": "WorkSans-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "WorkSans-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Work Sans Black",
+"files": [
+{
+"file": "WorkSans-Black.ttf",
+"weight": 900,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Work Sans ExtraBold",
+"files": [
+{
+"file": "WorkSans-ExtraBold.ttf",
+"weight": 800,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Yellowtail",
+"files": [
+{
+"file": "Yellowtail-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Yeseva One",
+"files": [
+{
+"file": "YesevaOne-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Zilla Slab",
+"files": [
+{
+"file": "ZillaSlab-Bold.ttf",
+"weight": 700,
+"variable": false,
+"italic": false
+},
+{
+"file": "ZillaSlab-Regular.ttf",
+"weight": 400,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Zilla Slab Medium",
+"files": [
+{
+"file": "ZillaSlab-Medium.ttf",
+"weight": 500,
+"variable": false,
+"italic": false
+}
+]
+},
+{
+"family": "Zilla Slab SemiBold",
+"files": [
+{
+"file": "ZillaSlab-SemiBold.ttf",
+"weight": 600,
+"variable": false,
+"italic": false
+}
+]
+}
+]

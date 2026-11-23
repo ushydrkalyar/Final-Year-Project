@@ -8,9 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0F1117;--card:#1A1D29;
-  --primary:#6366F1;--primary-d:#4F46E5;
-  --t1:#FFFFFF;--t2:#94A3B8;--t3:#475569;
+  --bg:#0B0B0B;--card:#111312;
+  --primary:#74F5B8;--primary-d:#5BDDA0;
+  --t1:#F5F5F4;--t2:#A1A1AA;--t3:#71717A;
   --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -19,7 +19,7 @@ body{
   font-family:var(--font);background:var(--bg);color:var(--t1);
   height:100vh;display:flex;align-items:center;justify-content:center;
   overflow:hidden;
-  background-image:radial-gradient(circle at 50% 45%, rgba(99,102,241,.14), transparent 55%);
+  background-image:radial-gradient(circle at 50% 45%, rgba(116, 245, 184,.14), transparent 55%);
 }
 
 .stage{display:flex;flex-direction:column;align-items:center;gap:22px;
@@ -28,7 +28,7 @@ body{
 .stage.out{opacity:0;transform:scale(1.04);transition:opacity .5s ease,transform .5s ease}
 
 .badge{width:72px;height:72px;border-radius:20px;background:var(--primary);
-  display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px -12px rgba(99,102,241,.55)}
+  display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px -12px rgba(116, 245, 184,.55)}
 .badge svg{width:40px;height:40px}
 .bar{transform-origin:center;animation:pulse 1.1s ease-in-out infinite}
 .bar1{animation-delay:0s}.bar2{animation-delay:.12s}.bar3{animation-delay:.24s}.bar4{animation-delay:.36s}
@@ -38,21 +38,47 @@ body{
 .tagline{font-size:12.5px;color:var(--t2);margin-top:-14px;font-family:var(--mono);letter-spacing:.02em}
 
 .loader{width:140px;height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px}
-.loader-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),#818CF8);border-radius:2px;
+.loader-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),#A7FFD6);border-radius:2px;
   transition:width 1.9s cubic-bezier(.4,0,.2,1)}
 .loader-fill.go{width:100%}
+
+  /* ===== Higgsfield-inspired theme: near-black, dot grid, neon lime accent ===== */
+  :root{--on-primary:#0A0A0B;--display:'DM Sans','Inter',system-ui,sans-serif;--radius:10px;--radius-lg:16px}
+  body{background-image:radial-gradient(rgba(255,255,255,.055) 1px,transparent 1px);background-size:22px 22px;background-color:var(--bg)}
+  h1,h2,.wordmark{font-family:var(--display)}
+  h1,h2,.wordmark{text-transform:uppercase;font-stretch:112%;font-weight:800;letter-spacing:-.01em}
+  h1 em{color:var(--primary);font-style:normal}
+  .topbar{background:rgba(10,10,11,.82)!important;backdrop-filter:blur(12px)}
+  .logo-icon,.badge{box-shadow:0 0 22px rgba(116,245,184,.28)}
+  .logo-icon svg{stroke:var(--on-primary)!important}
+  .submit,button.primary{border-radius:999px!important;box-shadow:0 3px 0 rgba(52,150,105,.9),0 10px 30px -8px rgba(116,245,184,.35);font-weight:700}
+  .submit:hover{transform:translateY(-1px);filter:brightness(1.05)}
+  input:focus,select:focus,textarea:focus{border-color:var(--primary)!important;box-shadow:0 0 0 3px var(--primary-g)!important}
+  .avatar{color:var(--on-primary)}
+  ::selection{background:var(--primary);color:var(--on-primary)}
+
+  /* ===== Mint-on-black theme (inspired by modern caption tools): calm dark, mint CTA, muted-green accents ===== */
+  :root{--accent-soft:#5FA98A;--radius:12px;--radius-lg:20px}
+  body{background-image:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(116,245,184,.10),transparent 70%),linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:auto,48px 48px,48px 48px;background-attachment:fixed}
+  h1,h2,.wordmark{text-transform:none!important;font-stretch:normal!important;font-weight:600!important;letter-spacing:-.02em!important;font-family:var(--display)}
+  h1 em{color:var(--accent-soft)!important}
+  .submit,button.primary{box-shadow:0 0 22px rgba(116,245,184,.35)!important;font-weight:600}
+  .badge,.logo-icon{box-shadow:0 0 24px rgba(116,245,184,.3)}
+  .divider span{color:var(--t3)}
+  .card{border-radius:var(--radius-lg)}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <div class="stage" id="stage">
   <div class="badge">
     <svg viewBox="0 0 24 24" fill="none">
-      <rect class="bar bar1" x="2"  y="9.5" width="3" height="5"  rx="1.5" fill="white"/>
-      <rect class="bar bar2" x="7"  y="5.5" width="3" height="13" rx="1.5" fill="white"/>
-      <rect class="bar bar3" x="14" y="5.5" width="3" height="13" rx="1.5" fill="white"/>
-      <rect class="bar bar4" x="19" y="9.5" width="3" height="5"  rx="1.5" fill="white"/>
-      <line x1="12" y1="6" x2="12" y2="18" stroke="white" stroke-width="1.5"
+      <rect class="bar bar1" x="2"  y="9.5" width="3" height="5"  rx="1.5" fill="#0A0A0B"/>
+      <rect class="bar bar2" x="7"  y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B"/>
+      <rect class="bar bar3" x="14" y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B"/>
+      <rect class="bar bar4" x="19" y="9.5" width="3" height="5"  rx="1.5" fill="#0A0A0B"/>
+      <line x1="12" y1="6" x2="12" y2="18" stroke="#0A0A0B" stroke-width="1.5"
             stroke-linecap="round" stroke-dasharray="1.5 2.3" opacity=".85"/>
     </svg>
   </div>
@@ -61,13 +87,13 @@ body{
   <div class="loader"><div class="loader-fill" id="loaderFill"></div></div>
 </div>
 
+<script src="/assets/session.js?v=20261123"></script>
 <script>
 // Reads ?next= to know where to blend into once the splash finishes.
-// Falls back to the editor if this page is ever opened without a target.
+// Falls back to Home if this page is ever opened without a safe target.
 function nextUrl() {
   const params = new URLSearchParams(window.location.search);
-  const n = params.get('next');
-  return n && n.startsWith('/') ? n : '/editor.html';
+  return safeNext(params.get('next'));
 }
 
 const stage  = document.getElementById('stage');

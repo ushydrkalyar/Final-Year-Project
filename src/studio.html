@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CutSmart Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/studio.css?v=20261123b">
+<style id="authGate">body{visibility:hidden}</style>
+</head>
+<body>
+<header class="top">
+  <button class="icon home" data-click="goHome" title="Home" aria-label="Home"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg></button>
+  <input class="title" id="title" value="Untitled" aria-label="Project name" data-change="renameProject">
+  <small id="foot" role="status"></small>
+  <button class="icon" id="tUndo" data-click="undo" title="Undo (Cmd/Ctrl+Z)" aria-label="Undo" disabled><svg class="i" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-4"/></svg></button>
+  <button class="icon" id="tRedo" data-click="redo" title="Redo (Cmd/Ctrl+Shift+Z)" aria-label="Redo" disabled><svg class="i" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 000 12h4"/></svg></button>
+  <select class="in" id="ratio" aria-label="Aspect ratio" data-change="setFormat">
+    <option value="">Original</option><option value="vertical">9:16</option><option value="landscape">16:9</option><option value="square">1:1</option>
+  </select>
+  <button class="btn" id="genB" data-click="generate">Generate edit</button>
+  <div class="split" data-menu>
+    <button class="btn mint" id="expB" data-click="exportVideo" disabled>Export</button>
+    <button class="btn mint more" id="expMore" data-click="toggleMenu" data-value="expMenu" aria-label="More export options" disabled>▾</button>
+    <div class="menu" id="expMenu" hidden><button id="srtB" data-click="downloadSrt" disabled>Captions (.srt)</button></div>
+  </div>
+  <div class="user" data-menu>
+    <button class="av" id="av" data-click="toggleMenu" data-value="um" aria-label="Account">…</button>
+    <div class="menu" id="um" hidden><b id="uname"></b><a href="/profile.html">My profile</a><button data-click="logout">Log out</button></div>
+  </div>
+</header>
+
+<main class="work">
+  <nav class="rail" aria-label="Tools">
+    <button data-click="openTool" data-value="media"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>Media</button>
+    <button data-click="openTool" data-value="captions"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 11h4M7 15h8"/></svg>Captions</button>
+    <button data-click="openTool" data-value="templates"><svg class="i" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Templates</button>
+    <button data-click="openTool" data-value="pacing"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.5"/><circle cx="6" cy="17" r="2.5"/><path d="M8 8.5L20 17M8 15.5L20 7"/></svg>Pacing</button>
+    <button data-click="openTool" data-value="reference"><svg class="i" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007 0l1.5-1.5a5 5 0 00-7-7L10 6"/><path d="M14 11a5 5 0 00-7 0l-1.5 1.5a5 5 0 007 7L14 18"/></svg>Reference</button>
+    <button data-click="openTool" data-value="comments"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-11.5 7.2L4 20l1.3-4.3A8 8 0 1121 12z"/></svg>Comments</button>
+  </nav>
+
+  <aside class="drawer" id="drawer">
+    <section class="tool" data-tool="media" hidden>
+      <h2>Media</h2>
+      <div class="scroll" id="mediaBody"></div>
+      <input type="file" id="replIn" accept="video/*" hidden data-change="replaceVideo">
+      <input type="file" id="addIn" accept="video/*" multiple hidden data-change="addClips">
+    </section>
+    <section class="tool" data-tool="captions" hidden>
+      <h2>Captions</h2>
+      <input class="in" id="csearch" placeholder="Search captions" aria-label="Search captions" data-input="searchCaptions">
+      <div class="scroll" id="clist"><p class="note">Captions appear here after your first edit.</p></div>
+    </section>
+    <section class="tool" data-tool="templates" hidden>
+      <h2>Templates</h2>
+      <div class="scroll" id="tplBody"></div>
+    </section>
+    <section class="tool" data-tool="pacing" hidden>
+      <h2>Pacing</h2>
+      <div class="scroll"><div id="paceBody"></div><div id="cutBody"></div></div>
+      <div class="sticky" id="paceFoot" hidden><button class="btn mint wide" data-click="generate">Re-edit video</button></div>
+    </section>
+    <section class="tool" data-tool="reference" hidden>
+      <h2>Reference</h2>
+      <div class="scroll">
+        <p class="note">Paste a link to a video whose pacing you want to match. CutSmart measures its cut frequency and speaking rate, then decides what to keep, cut and compress to match it.</p>
+        <input class="in" id="refLink" placeholder="https://www.youtube.com/watch?v=…" aria-label="Reference link" style="width:100%" data-input="clearReferenceNote">
+        <label class="check"><input type="checkbox" id="refCopyStyle"><span>Copy caption style</span></label>
+        <p class="note">Also reads the reference's on-screen captions and applies their size, colour and position.</p>
+        <button class="btn mint wide" id="refSubmitBtn" data-click="matchReference">Match pacing</button>
+        <div id="refStatus" class="note" role="status"></div>
+        <div id="refResult"></div>
+      </div>
+    </section>
+    <section class="tool" data-tool="comments" hidden>
+      <h2>Comments</h2>
+      <p class="note" id="cmtHelp"></p>
+      <div class="cmtrow"><input class="in" id="cmtIn" placeholder="cut 0:05 to 0:08" aria-label="Describe the fix" data-keydown="askKey"><button class="btn" id="cmtBtn" data-click="ask">Send</button></div>
+      <div class="cmtmsg" id="cmtMsg" role="status"></div>
+      <div class="scroll" id="cmtList"></div>
+    </section>
+  </aside>
+
+  <section class="center">
+    <div class="stage" id="stage">
+      <video id="vid" playsinline style="display:none"></video>
+      <div class="ph-empty" id="noVid"></div>
+      <video id="vsrc" playsinline muted style="display:none"></video>
+      <div class="ovl" id="ovl" style="display:none"></div>
+      <img class="ovimg" id="ovimg" alt="" style="display:none">
+      <div class="grab" id="grab" title="Drag to move the captions" hidden></div>
+      <div class="vguide" id="vguide" hidden></div>
+      <div class="burn" id="burnNote" role="status" hidden>
+        <span>This clip already has captions in the picture, so yours are hidden on it.</span>
+        <button class="btn" data-click="burnShow">Show mine too</button>
+        <button class="btn" data-click="burnKeep">OK</button>
+      </div>
+      <div class="fedit" id="fedit" style="display:none"><div class="fwin" id="fwin"><span class="fbadge" id="fbadge"></span></div></div>
+      <div class="ftool" id="ftool" style="display:none">
+        <span class="fhint" id="fhint"></span>
+        <label class="fz">Zoom <input type="range" id="fzoom" min="1" max="3" step="0.05" value="1" data-input="zoomFrame" data-change="zoomFrameDone"></label>
+        <label class="fz" id="fscrubw" style="display:none">Frame <input type="range" id="fscrub" min="0" max="1000" value="0" data-input="scrubFootage"></label>
+        <button class="btn" id="fauto" data-click="autoFrame" style="display:none">Auto-follow</button>
+        <button class="btn mint" id="fdone" data-click="doneFraming" style="display:none">Done</button>
+      </div>
+      <div class="steps" id="steps" hidden>
+        <label><b>1</b>Pacing<select class="in" id="stepPace" aria-label="Pacing" data-change="setCut" data-key="stylePreset"></select></label>
+        <label><b>2</b>Captions<select class="in" id="stepTpl" aria-label="Caption template" data-change="pickTemplate"></select></label>
+        <label><b>3</b><button class="btn mint" id="stepGo" data-click="generate">Generate</button></label>
+      </div>
+      <div class="state" id="state" role="status" hidden></div>
+    </div>
+    <div class="ctl">
+      <button class="icon" id="playB" data-click="togglePlay" title="Play or pause (Space)" aria-label="Play or pause"><svg class="i" id="playI" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg></button>
+      <span class="time" id="time">00:00:00 / 00:00:00</span>
+      <div class="seek" id="seek" data-click="seekBar"><i id="seekI"></i></div>
+      <button class="icon" id="rotL" data-click="rotateLeft" title="Turn every clip left" aria-label="Turn every clip left"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 103-6.7L3 8M3 3v5h5"/></svg></button>
+      <button class="icon" id="rotB" data-click="rotateRight" title="Turn every clip right" aria-label="Turn every clip right"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7L21 8M21 3v5h-5"/></svg></button>
+      <button class="icon" id="muteB" data-click="toggleMute" title="Mute" aria-label="Mute"><svg class="i" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6"/></svg></button>
+      <button class="icon" data-click="fullscreen" title="Full screen" aria-label="Full screen"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button class="icon" id="inspB" data-click="toggleInspector" title="Show or hide the inspector" aria-label="Show or hide the inspector"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button>
+    </div>
+  </section>
+
+  <aside class="inspector" id="inspector">
+    <div class="ihead"><div class="sq" id="itabs"><button data-click="inspect" data-value="text">Caption</button><button data-click="inspect" data-value="clip">Clip</button><button data-click="inspect" data-value="cut">Cut</button></div></div>
+    <div class="rbody" id="rbody"></div>
+  </aside>
+</main>
+
+<div class="vsplit" id="vsplit" role="separator" aria-orientation="horizontal" aria-label="Resize the timeline" tabindex="0" data-keydown="resizeTimeline"></div>
+
+<section class="tl">
+  <div class="tlt">
+    <button class="tbtn" id="tSplit" data-click="splitCaption" title="Split caption at playhead (S)" disabled>✂ Split</button>
+    <button class="tbtn" id="tAdd" data-click="addCaption" title="Add caption at playhead" disabled>＋ Caption</button>
+    <button class="tbtn" id="tDel" data-click="deleteSelected" title="Delete selection (Del)" disabled>Delete</button>
+    <button class="tbtn" id="tRestore" data-click="restoreSelected" title="Put the selected removed range back" disabled>Restore</button>
+    <div class="sq" id="tView"><button class="on" data-click="setView" data-value="edited">Edited</button><button data-click="setView" data-value="original">Original</button></div>
+    <div class="grow"></div>
+    <span class="stat" id="tstat"></span>
+    <button class="chip" id="statChip" data-click="toggleReport" aria-expanded="false" hidden></button>
+    <label class="fz note">Zoom <input type="range" id="tZoom" min="1" max="12" step="0.5" value="1" data-input="zoomTimeline"></label>
+  </div>
+  <div class="report" id="reportPop" hidden></div>
+  <div class="tlw" id="tlw" data-click="seekTimeline"><div class="tlin" id="tlin">
+    <div class="ruler" id="ruler"></div>
+    <div class="tr" data-lane="captions"><div class="lb">Captions</div><div class="lane" id="lCap"></div></div>
+    <div class="tr film-row" data-lane="video"><div class="lb">Video <button class="addclip" id="addB" data-click="pickClips" title="Add clips" aria-label="Add clips" disabled>+</button></div><div class="lane" id="lVid"></div></div>
+    <div class="tr" data-lane="cuts"><div class="lb">Cuts</div><div class="lane" id="lCut"></div></div>
+    <div class="tr" data-lane="audio"><div class="lb">Audio</div><div class="lane" id="lAud"><canvas class="wave" id="wave"></canvas></div></div>
+    <div class="ph" id="ph" style="display:none"></div>
+    <div class="tlmsg" id="tlmsg">The timeline appears after your first edit</div>
+  </div></div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script src="/assets/a11y.js?v=20261123b"></script>
+<script src="/assets/projects.js?v=20261123b"></script>
+<script src="/assets/vendor/jassub-1.8.6/jassub.umd.js"></script>
+<script src="/assets/live_captions.js?v=20261123b"></script>
+<script src="/assets/languages.js?v=20261123b"></script>
+  <script src="/assets/ui.js?v=20261123b"></script>
+  <script src="/assets/session.js?v=20261123b"></script>
+  <script src="/assets/api.js?v=20261123b"></script>
+<script>
+// Locked templates. locked_templates/check_locked_templates.py compares this exact text with the
+// frozen copy, so keep the only definition here; assets/studio/style.js reads it.
+const CUTSMART_LOCKED_TEMPLATES={
+ box_karaoke:{font:'Poppins Medium',face:'Regular',italic:false,emItalic:false,size:20,color:'#141414',wpc:5,lines:1,em:false,emFont:'Anton',emColor:'#C0281C',emScale:2.1,glow:false,emEvery:1,y:62},
+ soft_reveal:{font:'Manrope',face:'Bold',italic:false,emItalic:true,size:40,color:'#FFFFFF',wpc:5,lines:1,em:true,emFont:'Instrument Serif',emColor:'#FFFFFF',emScale:1.7,glow:false,emEvery:1,y:63}};
+</script>
+<script type="module" src="/assets/studio/main.js?v=20261123b"></script>
+</body>
+</html>

@@ -1,10 +1,7 @@
 import yt_dlp
 import pandas as pd
-import numpy as np
 import os
 
-from transcription_service import transcribe_audio
-from feature_extractor import extract_pause_features
 
 
 def download_youtube_audio(url: str, output_filename: str = "reference_audio.wav") -> str | None:
@@ -148,7 +145,7 @@ def calculate_style_profile(pause_data: pd.DataFrame, transcript_data: dict = No
     raw_max_duration      = median_pause * 2.0
     raw_compress_duration = median_pause * 1.2
 
-    print(f"      [Metric 1] Pause durations")
+    print("      [Metric 1] Pause durations")
     print(f"         median: {median_pause:.3f}s   mean: {mean_pause:.3f}s")
     print(f"         raw thresholds → CUT>{raw_max_duration:.2f}s  COMPRESS>{raw_compress_duration:.2f}s")
 
@@ -176,7 +173,7 @@ def calculate_style_profile(pause_data: pd.DataFrame, transcript_data: dict = No
         elif speaking_rate < 2.0:
             rate_multiplier = min(1.20, 1.0 + (2.0 - speaking_rate) * 0.10)
 
-    print(f"      [Metric 2] Speaking rate")
+    print("      [Metric 2] Speaking rate")
     print(f"         {speaking_rate:.2f} words/sec  →  threshold multiplier: {rate_multiplier:.2f}x")
 
     # Apply speaking-rate multiplier to duration thresholds
@@ -197,7 +194,7 @@ def calculate_style_profile(pause_data: pd.DataFrame, transcript_data: dict = No
         if boundary_ratio > 0.4:
             boundary_keep_boost = round(boundary_ratio * 0.5, 2)   # up to +0.5s
 
-    print(f"      [Metric 3] Sentence-boundary pause ratio")
+    print("      [Metric 3] Sentence-boundary pause ratio")
     print(f"         {boundary_ratio:.1%} of pauses are at sentence boundaries")
     print(f"         boundary keep boost: +{boundary_keep_boost:.2f}s on CUT threshold")
 
@@ -221,7 +218,7 @@ def calculate_style_profile(pause_data: pd.DataFrame, transcript_data: dict = No
         elif cuts_per_minute < 5:
             frequency_multiplier = 1.10
 
-    print(f"      [Metric 4] Cut frequency")
+    print("      [Metric 4] Cut frequency")
     print(f"         {cuts_per_minute:.1f} pauses/min  →  frequency multiplier: {frequency_multiplier:.2f}x")
 
     # ══════════════════════════════════════════════════════════════════════
@@ -257,7 +254,7 @@ def calculate_style_profile(pause_data: pd.DataFrame, transcript_data: dict = No
         )
     }
 
-    print(f"\n   ✅ Final style profile:")
+    print("\n   ✅ Final style profile:")
     print(f"      {profile['_summary']}")
 
     return profile
@@ -273,26 +270,3 @@ def _default_profile() -> dict:
         "cuts_per_minute":     8.0,
         "_summary":            "default balanced profile"
     }
-
-
-if __name__ == "__main__":
-    from transcription_service import transcribe_audio
-
-    reference_url   = "https://www.youtube.com/shorts/cehKajB1bzc"
-    reference_audio = "reference_audio.wav"
-
-    print("--- Style Extraction Test ---")
-
-    audio_path = download_youtube_audio(reference_url, reference_audio)
-
-    if audio_path and os.path.exists(audio_path):
-        transcript = transcribe_audio(audio_path)
-        pause_data = extract_pause_features(transcript, audio_path)
-        profile    = calculate_style_profile(pause_data, transcript)
-
-        print("\n--- Final Style Profile ---")
-        for k, v in profile.items():
-            if not k.startswith('_'):
-                print(f"  {k}: {v}")
-    else:
-        print("Download failed.")

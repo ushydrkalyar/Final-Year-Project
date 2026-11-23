@@ -11,24 +11,24 @@
     rel="stylesheet">
   <style>
     :root {
-      --bg: #0F1117;
-      --card: #1A1D29;
-      --card2: #22263A;
-      --card3: #2A2F45;
-      --border: rgba(255, 255, 255, .07);
-      --border2: rgba(255, 255, 255, .13);
-      --primary: #6366F1;
-      --primary-d: #4F46E5;
-      --primary-g: rgba(99, 102, 241, .14);
-      --success: #22C55E;
-      --success-g: rgba(34, 197, 94, .12);
-      --danger: #EF4444;
-      --danger-g: rgba(239, 68, 68, .12);
-      --warn: #F59E0B;
-      --warn-g: rgba(245, 158, 11, .12);
-      --t1: #FFFFFF;
-      --t2: #94A3B8;
-      --t3: #475569;
+      --bg:#0B0B0B;
+      --card:#111312;
+      --card2:#171A18;
+      --card3:#1E2220;
+      --border:rgba(255, 255, 255, .07);
+      --border2:rgba(255, 255, 255, .16);
+      --primary:#74F5B8;
+      --primary-d:#5BDDA0;
+      --primary-g:rgba(116, 245, 184, .12);
+      --success:#34D399;
+      --success-g:rgba(52, 211, 153, .14);
+      --danger:#FF5A5F;
+      --danger-g:rgba(255, 90, 95, .14);
+      --warn:#FBBF24;
+      --warn-g:rgba(251, 191, 36, .14);
+      --t1:#F5F5F4;
+      --t2:#A1A1AA;
+      --t3:#71717A;
       --radius: 8px;
       --radius-lg: 14px;
       --tr: .15s cubic-bezier(.4, 0, .2, 1);
@@ -365,12 +365,12 @@
 
     .btn.primary {
       background: var(--primary);
-      color: #fff
+      color:var(--on-primary)
     }
 
     .btn.primary:hover:not(:disabled) {
       background: var(--primary-d);
-      box-shadow: 0 4px 14px rgba(99, 102, 241, .3)
+      box-shadow: 0 4px 14px rgba(116, 245, 184, .3)
     }
 
     .btn.primary:disabled {
@@ -448,25 +448,28 @@
       color: #fee2e2
     }
   </style>
+  <link rel="stylesheet" href="/assets/theme.css?v=20261123" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<style id="authGate">body{visibility:hidden}</style>
 </head>
 
 <body>
 
   <header class="topbar">
-    <a class="logo" href="/editor.html">
+    <a class="logo" href="/home.html">
       <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" width="15" height="15">
-          <rect x="2" y="9.5" width="3" height="5" rx="1.5" fill="white" />
-          <rect x="7" y="5.5" width="3" height="13" rx="1.5" fill="white" />
-          <rect x="14" y="5.5" width="3" height="13" rx="1.5" fill="white" />
-          <rect x="19" y="9.5" width="3" height="5" rx="1.5" fill="white" />
+          <rect x="2" y="9.5" width="3" height="5" rx="1.5" fill="#0A0A0B" />
+          <rect x="7" y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B" />
+          <rect x="14" y="5.5" width="3" height="13" rx="1.5" fill="#0A0A0B" />
+          <rect x="19" y="9.5" width="3" height="5" rx="1.5" fill="#0A0A0B" />
         </svg></div>
       CutSmart
     </a>
-    <a class="back" href="/editor.html">
+    <a class="back" href="/home.html">
       <svg viewBox="0 0 24 24">
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      Back to editor
+      Back to home
     </a>
   </header>
 
@@ -572,34 +575,25 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="/assets/ui.js?v=20261123"></script>
+  <script src="/assets/session.js?v=20261123"></script>
+  <script src="/assets/api.js?v=20261123"></script>
+  <script src="/assets/password.js?v=20261123"></script>
   <script>
-    const API = window.location.origin;
     let CURRENT_USER = null;
 
-    function toast(msg, type = 'success') {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.className = `toast show ${type}`;
-      setTimeout(() => t.classList.remove('show'), 2800);
-    }
-
     async function loadProfile() {
-      try {
-        const r = await fetch(`${API}/auth/me`, { credentials: 'include' });
-        if (!r.ok) throw new Error();
-        const { user } = await r.json();
-        CURRENT_USER = user;
-        document.getElementById('displayName').textContent = user.name;
-        document.getElementById('displayEmail').textContent = user.email;
-        document.getElementById('displaySince').textContent =
-          'Member since ' + new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
-        document.getElementById('nameInput').value = user.name;
-        document.getElementById('emailInput').value = user.email;
-        const av = document.getElementById('bigAvatar');
-        av.textContent = user.initials;
-        av.style.background = user.avatar_color;
-      } catch {
-        window.location.href = '/login.html?next=/profile.html';
-      }
+      const user = await requireUser();
+      CURRENT_USER = user;
+      document.getElementById('displayName').textContent = user.name;
+      document.getElementById('displayEmail').textContent = user.email;
+      document.getElementById('displaySince').textContent =
+        'Member since ' + new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+      document.getElementById('nameInput').value = user.name;
+      document.getElementById('emailInput').value = user.email;
+      const av = document.getElementById('bigAvatar');
+      av.textContent = user.initials;
+      av.style.background = user.avatar_color;
     }
     loadProfile();
 
@@ -610,17 +604,11 @@
       const btn = document.getElementById('saveNameBtn');
       btn.disabled = true; btn.classList.add('loading');
       try {
-        const r = await fetch(`${API}/auth/me`, {
-          method: 'PUT', credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name }),
-        });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.detail || 'Failed');
+        const data = await apiJson('/auth/me', { method: 'PUT', json: { name }, fallback: 'Could not save your profile.' });
         CURRENT_USER = data.user;
         document.getElementById('displayName').textContent = data.user.name;
         document.getElementById('bigAvatar').textContent = data.user.initials;
-        toast('Profile updated successfully.');
+        toast('Profile updated successfully.', 'success');
       } catch (err) { toast(err.message, 'error'); }
       finally { btn.disabled = false; btn.classList.remove('loading'); }
     });
@@ -640,27 +628,20 @@
       btn.disabled = true; btn.classList.add('loading');
       document.getElementById('pwStep1Err').style.display = 'none';
       try {
-        const r = await fetch(`${API}/auth/verify-password`, {
-          method: 'POST', credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ current_password: pw }),
-        });
-        if (r.ok) {
+        await api('/auth/verify-password', { json: { current_password: pw } });
+        document.getElementById('pwStep1').style.display = 'none';
+        document.getElementById('pwStep2').style.display = 'block';
+        document.getElementById('newPw').focus();
+      } catch (err) {
+        if (err.data?.detail === 'wrong_password') {
           document.getElementById('pwStep1').style.display = 'none';
-          document.getElementById('pwStep2').style.display = 'block';
-          document.getElementById('newPw').focus();
+          document.getElementById('pwWrong').style.display = 'block';
+        } else if (err.data?.detail === 'no_password') {
+          showErr('pwStep1Err', 'Your account uses Google Sign-In — no password set.');
         } else {
-          const data = await r.json();
-          if (data.detail === 'wrong_password') {
-            document.getElementById('pwStep1').style.display = 'none';
-            document.getElementById('pwWrong').style.display = 'block';
-          } else if (data.detail === 'no_password') {
-            showErr('pwStep1Err', 'Your account uses Google Sign-In — no password set.');
-          } else {
-            showErr('pwStep1Err', data.detail || 'Something went wrong.');
-          }
+          showErr('pwStep1Err', err.message);
         }
-      } catch { showErr('pwStep1Err', 'Could not reach the server.'); }
+      }
       finally { btn.disabled = false; btn.classList.remove('loading'); }
     }
 
@@ -668,33 +649,28 @@
       const pw = document.getElementById('newPw').value;
       const pw2 = document.getElementById('confirmPw').value;
       document.getElementById('pwStep2Err').style.display = 'none';
-      if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/[0-9]/.test(pw)) {
-        showErr('pwStep2Err', 'Password must be at least 8 characters with letters and numbers.'); return;
-      }
+      const problem = passwordProblem(pw);
+      if (problem) { showErr('pwStep2Err', problem); return; }
       if (pw !== pw2) { showErr('pwStep2Err', 'Passwords do not match.'); return; }
       const btn = document.getElementById('savePwBtn');
       btn.disabled = true; btn.classList.add('loading');
       try {
-        const r = await fetch(`${API}/auth/me`, {
-          method: 'PUT', credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pw }),
+        await api('/auth/me', {
+          method: 'PUT', fallback: 'Failed to update password.',
+          json: { password: pw, current_password: document.getElementById('currentPw').value },
         });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.detail || 'Failed to update password.');
         document.getElementById('pwStep2').style.display = 'none';
         document.getElementById('pwSuccess').style.display = 'block';
-      } catch (err) { showErr('pwStep2Err', err.message); }
+      } catch (err) {
+        showErr('pwStep2Err', err.data?.detail === 'wrong_password' ? 'Your current password is incorrect. Start again.' : err.message);
+      }
       finally { btn.disabled = false; btn.classList.remove('loading'); }
     }
 
     async function sendForgotEmail() {
       if (!CURRENT_USER?.email) return;
       try {
-        await fetch(`${API}/auth/forgot-password`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: CURRENT_USER.email }),
-        });
+        await api('/auth/forgot-password', { json: { email: CURRENT_USER.email } }); // 200 is the same for known and unknown emails
         const el = document.getElementById('pwResetSent');
         el.textContent = `Reset link sent to ${CURRENT_USER.email}. Check your inbox.`;
         el.style.display = 'flex';
@@ -706,10 +682,7 @@
       el.textContent = msg; el.style.display = 'flex';
     }
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      try { await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }); } catch { }
-      window.location.href = '/welcome.html';
-    });
+    document.getElementById('logoutBtn').addEventListener('click', logout);
   </script>
 </body>
 

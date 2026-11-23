@@ -1,0 +1,1 @@
+box_karaoke:{font:'Poppins Medium',face:'Regular',italic:false,emItalic:false,size:20,color:'#141414',wpc:5,lines:1,em:false,emFont:'Anton',emColor:'#C0281C',emScale:2.1,glow:false,emEvery:1,y:62}

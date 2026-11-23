@@ -1,0 +1,19 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Soft,Manrope,105,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,0,1,5,75,75,20,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.24,0:00:02.02,Soft,,0,0,0,,{\an5\pos(540,1209)\fs105\1c&H00FFFFFF\shad6\4c&H000000&\4a&H50&\fad(0,170)}{\alpha&HFF&\blur3\t(9,239,\alpha&H00&\blur1)}All {\alpha&HFF&\blur3\t(430,660,\alpha&H00&\blur1)}know {\alpha&HFF&\blur3\t(849,1079,\alpha&H00&\blur1)}is {\alpha&HFF&\blur3\t(1270,1500,\alpha&H00&\blur1)}just
+Dialogue: 0,0:00:01.92,0:00:02.43,Soft,,0,0,0,,{\an5\pos(540,1209)\fnInstrument Serif\fs178\i1\1c&H00FFFFFF\1a&H28&\bord1\3c&HFFFFFF&\3a&HB0&\blur1.6\shad6\4c&H000000&\4a&H58&\alpha&HFF&\t(0,260,\alpha&H28&)\fscx92\fscy92\t(0,700,\fscx100\fscy100)\fad(0,170)}something
+Dialogue: 0,0:00:02.33,0:00:04.11,Soft,,0,0,0,,{\an5\pos(540,1209)\fs105\1c&H00FFFFFF\shad6\4c&H000000&\4a&H50&\fad(0,170)}{\alpha&HFF&\blur3\t(10,240,\alpha&H00&\blur1)}about {\alpha&HFF&\blur3\t(430,660,\alpha&H00&\blur1)}you. {\alpha&HFF&\blur3\t(849,1079,\alpha&H00&\blur1)}Got {\alpha&HFF&\blur3\t(1269,1499,\alpha&H00&\blur1)}me
+Dialogue: 0,0:00:04.02,0:00:04.54,Soft,,0,0,0,,{\an5\pos(540,1209)\fnInstrument Serif\fs178\i1\1c&H00FFFFFF\1a&H28&\bord1\3c&HFFFFFF&\3a&HB0&\blur1.6\shad6\4c&H000000&\4a&H58&\alpha&HFF&\t(0,260,\alpha&H28&)\fscx92\fscy92\t(0,700,\fscx100\fscy100)\fad(0,170)}feeling
+Dialogue: 0,0:00:04.44,0:00:06.21,Soft,,0,0,0,,{\an5\pos(540,1209)\fs105\1c&H00FFFFFF\shad6\4c&H000000&\4a&H50&\fad(0,170)}{\alpha&HFF&\blur3\t(9,239,\alpha&H00&\blur1)}like {\alpha&HFF&\blur3\t(429,659,\alpha&H00&\blur1)}I {\alpha&HFF&\blur3\t(849,1079,\alpha&H00&\blur1)}can't {\alpha&HFF&\blur3\t(1269,1499,\alpha&H00&\blur1)}be
+Dialogue: 0,0:00:06.12,0:00:06.99,Soft,,0,0,0,,{\an5\pos(540,1209)\fnInstrument Serif\fs178\i1\1c&H00FFFFFF\1a&H28&\bord1\3c&HFFFFFF&\3a&HB0&\blur1.6\shad6\4c&H000000&\4a&H58&\alpha&HFF&\t(0,260,\alpha&H28&)\fscx92\fscy92\t(0,700,\fscx100\fscy100)\fad(0,170)}without
